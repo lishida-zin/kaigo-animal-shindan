@@ -1,0 +1,9 @@
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  base: process.env.BASE_PATH ?? '/',
+  test: {
+    environment: 'node',
+    globals: true,
+  },
+});

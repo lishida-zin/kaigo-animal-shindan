@@ -1,0 +1,11 @@
+# pnpm の安全設定（https://pnpm.io/settings/dependency-resolution ・ /settings/build で確認）
+# 公開から24時間たっていない版は入れない
+minimumReleaseAge: 1440
+# Git や URL からの部品は、直接の依存だけに許す
+blockExoticSubdeps: true
+# 信頼レベルが前の版より下がった部品は入れない
+trustPolicy: no-downgrade
+# 許可していない部品のインストール時スクリプトがあれば失敗させる
+strictDepBuilds: true
+# インストール時スクリプトを動かしてよい部品
+allowBuilds: {}
