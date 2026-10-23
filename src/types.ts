@@ -3,14 +3,14 @@ export type Side = 'left' | 'right';
 export type Answer = 1 | 2 | 3 | 4 | 5;
 export type GroupId = 'drive' | 'unite' | 'craft' | 'care';
 
-export interface Question {
+export type Question = {
   id: string;
   axis: AxisId;
   direction: Side;
   text: string;
 }
 
-export interface AxisScore {
+export type AxisScore = {
   axis: AxisId;
   /** 0〜100。右側に寄るほど大きい */
   rightness: number;
@@ -20,7 +20,7 @@ export interface AxisScore {
   balanced: boolean;
 }
 
-export interface Diagnosis {
+export type Diagnosis = {
   scores: Record<AxisId, AxisScore>;
   /** A〜D 軸のコード（例 LTFK） */
   animalCode: string;

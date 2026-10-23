@@ -7,19 +7,22 @@ const all = files.map((f) => ({ f, css: readFileSync(join(dir, f), 'utf-8') }));
 const tokens = readFileSync(join(dir, 'tokens.css'), 'utf-8');
 
 function vars(block: string): Record<string, string> {
-  return Object.fromEntries([...block.matchAll(/(--[\w-]+):\s*(#[0-9a-fA-F]{6})\s*;/g)].map((m) => [m[1], m[2]]));
+  return Object.fromEntries([...block.matchAll(/(--[\w-]+):\s*(#[0-9a-fA-F]{6})\s*;/g)].map((m) => [m[1] ?? '', m[2] ?? '']));
 }
-const light = vars(tokens.split('@media')[0]);
+const light = vars(tokens.split('@media')[0] ?? '');
 const dark = vars(tokens.slice(tokens.indexOf('prefers-color-scheme: dark')));
 
 function luminance(hex: string): number {
-  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
-    .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  const lin = (i: number) => {
+    const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * lin(1) + 0.7152 * lin(3) + 0.0722 * lin(5);
 }
 function contrast(a: string, b: string): number {
-  const [l1, l2] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-  return (l1 + 0.05) / (l2 + 0.05);
+  const la = luminance(a);
+  const lb = luminance(b);
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
 }
 
 const pairs: [string, string][] = [
@@ -31,7 +34,7 @@ describe.each([['ライト', light], ['ダーク', dark]] as const)('%s：コン
   test.each(pairs)('%s / %s', (fg, bg) => {
     expect(t[fg], fg).toBeDefined();
     expect(t[bg], bg).toBeDefined();
-    expect(contrast(t[fg], t[bg])).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(t[fg] ?? '', t[bg] ?? '')).toBeGreaterThanOrEqual(4.5);
   });
 });
 

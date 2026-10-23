@@ -46,6 +46,11 @@ describe('scoreAxis', () => {
     expect(result.balanced).toBe(true);
   });
 
+  test('その軸に未回答があると NaN を返さずエラーにする', () => {
+    const qs = [q('A1', 'A', 'right'), q('A2', 'A', 'right')];
+    expect(() => scoreAxis(qs, { A1: 3 }, 'A', range)).toThrow(IncompleteAnswersError);
+  });
+
   test('ほかの軸の質問は計算に入らない', () => {
     const qs = [q('A1', 'A', 'right'), q('B1', 'B', 'right')];
     expect(scoreAxis(qs, { A1: 5, B1: 1 }, 'A', range).rightness).toBe(100);

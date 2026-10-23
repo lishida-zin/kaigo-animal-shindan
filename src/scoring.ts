@@ -19,9 +19,11 @@ export function scoreAxis(
   balanceRange: readonly [number, number],
 ): AxisScore {
   const own = questions.filter((q) => q.axis === axis);
+  const missing = own.filter((q) => answers[q.id] === undefined).map((q) => q.id);
+  if (missing.length > 0) throw new IncompleteAnswersError(missing);
   // 右側に寄るほど大きい値（1〜5）にそろえる
   const sum = own.reduce((acc, q) => {
-    const a = answers[q.id];
+    const a = answers[q.id] ?? 0;
     return acc + (q.direction === 'right' ? a : 6 - a);
   }, 0);
   // (平均 − 1) / 4 × 100 を、誤差が出にくい整数の計算で求める

@@ -58,9 +58,10 @@ describe('質問（questions.json）', () => {
   });
 
   test('となり合う2問が同じ軸にならない', () => {
-    for (let i = 1; i < questions.length; i++) {
-      expect(questions[i].axis, `${questions[i - 1].id} と ${questions[i].id}`).not.toBe(questions[i - 1].axis);
-    }
+    questions.slice(1).forEach((cur, i) => {
+      const prev = questions[i]!;
+      expect(cur.axis, `${prev.id} と ${cur.id}`).not.toBe(prev.axis);
+    });
   });
 
   test('質問の文が文章ルールを守っている', () => {

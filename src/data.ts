@@ -3,7 +3,7 @@ import animalsJson from '../data/animals.json';
 import questionsJson from '../data/questions.json';
 import type { AxisId, GroupId, Question } from './types';
 
-export interface SideDef {
+export type SideDef = {
   code: string;
   label: string;
   strength: string;
@@ -21,7 +21,7 @@ export interface SideDef {
   typeSentence?: string;
 }
 
-export interface AxisDef {
+export type AxisDef = {
   id: AxisId;
   name: string;
   trait: string;
@@ -31,7 +31,7 @@ export interface AxisDef {
   right: SideDef;
 }
 
-export interface GroupDef {
+export type GroupDef = {
   id: GroupId;
   name: string;
   /** A 軸と B 軸のコード（例 LT） */
@@ -40,7 +40,7 @@ export interface GroupDef {
   colorName: 'coral' | 'yellow' | 'mint' | 'lavender';
 }
 
-export interface AnimalDef {
+export type AnimalDef = {
   code: string;
   group: GroupId;
   name: string;

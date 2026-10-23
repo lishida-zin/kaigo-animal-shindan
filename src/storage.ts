@@ -1,6 +1,6 @@
 import type { Answer, AxisId } from './types';
 
-export interface SavedState {
+export type SavedState = {
   schemaVersion: 1;
   questionSetVersion: string;
   answers: Record<string, Answer>;
@@ -10,7 +10,7 @@ export interface SavedState {
   growthAxis: AxisId | null;
 }
 
-export interface Store {
+export type Store = {
   get(): SavedState;
   update(patch: Partial<SavedState>): SavedState;
   reset(): SavedState;
