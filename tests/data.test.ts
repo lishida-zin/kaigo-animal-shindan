@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { axes, animals, groups, questions, questionSetVersion } from '../src/data';
 import { checkCopy } from './copy';
 import ui from '../data/ui.json';
@@ -110,5 +111,11 @@ describe('画面の文字（ui.json）', () => {
   test('文章ルールを守っている', () => {
     const texts = [ui.appName, ui.lead, ui.notice.title, ...ui.notice.items, ...Object.values(ui.buttons), ui.confirmClear, ...Object.values(ui.result)];
     expect(texts.flatMap(checkCopy)).toEqual([]);
+  });
+});
+
+describe('動物のイラスト（public/images/animals）', () => {
+  test.each(animals.map((a) => [a.name, a.image] as const))('%s：%s がある', (_, image) => {
+    expect(existsSync(`public/images/animals/${image}`)).toBe(true);
   });
 });

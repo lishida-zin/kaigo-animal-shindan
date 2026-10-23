@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const dir = join(__dirname, '../src/styles');
@@ -52,4 +52,10 @@ test.each(all.map((x) => [x.f, x.css] as const))('%s：真っ白・真っ黒を�
 
 test.each(all.map((x) => [x.f, x.css] as const))('%s：斜体を使わない', (_, css) => {
   expect(css).not.toMatch(/font-style:\s*italic/);
+});
+
+// 書体の woff2 はビルドの前に作られる生成物なので、ここでは調べない（tests/subset.test.ts で確認）
+test.each(all.map((x) => [x.f, x.css] as const))('%s：url() で読みこむファイルがある', (_, css) => {
+  const urls = [...css.matchAll(/url\("(\.\.\/[^"]+)"\)/g)].map((m) => m[1] ?? '').filter((u) => !u.startsWith('../assets/fonts/'));
+  for (const u of urls) expect(existsSync(join(dir, u)), u).toBe(true);
 });

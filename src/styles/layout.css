@@ -55,8 +55,36 @@
 
 .r-actions { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 2rem; }
 
+/* あしらい（CSS の背景画像なので読み上げられない。文字に重ねない位置に置く） */
+.screen.top h1::before, .screen.top h1::after, .notice h2::after, .screen.result h2::after,
+.r-hero::before, .r-hero::after, .goal::after {
+  /* background の一括指定は background-image まで消すので使わない */
+  content: ""; background-position: center; background-size: contain; background-repeat: no-repeat;
+}
+.screen.top h1::before, .screen.top h1::after, .notice h2::after, .screen.result h2::after {
+  display: inline-block; width: 1.2em; height: 1.2em; vertical-align: -0.2em;
+}
+.screen.top h1::before { background-image: url("../assets/deco/sparkle.webp"); margin-right: 0.3em; }
+.screen.top h1::after { background-image: url("../assets/deco/heart.webp"); margin-left: 0.3em; }
+.notice h2::after { background-image: url("../assets/deco/clipboard.webp"); margin-left: 0.3em; }
+.screen.result h2::after { margin-left: 0.3em; }
+[data-section="axes"] h2::after { background-image: url("../assets/deco/star.webp"); }
+[data-section="cards"] h2::after { background-image: url("../assets/deco/leaf.webp"); }
+[data-section="leader"] h2::after { background-image: url("../assets/deco/nametag.webp"); }
+[data-section="follower"] h2::after { background-image: url("../assets/deco/hands.webp"); }
+[data-section="growth"] h2::after { background-image: url("../assets/deco/flower.webp"); }
+/* 入口：イラストの左上と右下に置く */
+.r-hero { position: relative; }
+.r-hero::before, .r-hero::after { position: absolute; width: 40px; height: 40px; }
+.r-hero::before { background-image: url("../assets/deco/sparkle.webp"); top: 14px; left: calc(50% - 124px); }
+.r-hero::after { background-image: url("../assets/deco/heart.webp"); top: 128px; left: calc(50% + 82px); }
+.goal { position: relative; padding-right: 3rem; }
+.goal::after { background-image: url("../assets/deco/sparkle.webp"); position: absolute; top: 0.6rem; right: 0.7rem; width: 32px; height: 32px; }
+
 /* タブレット */
 @media (min-width: 600px) {
+  .r-hero::before { top: 8px; left: 8px; }
+  .r-hero::after { top: auto; bottom: 8px; left: 8px; }
   .screen { padding: 1.75rem 2rem 3.5rem; }
   .r-hero { display: flex; gap: 1.5rem; align-items: center; text-align: left; padding: 1.5rem; }
   .r-hero .r-illust { margin: 0; flex: 0 0 180px; width: 180px; height: 180px; }
@@ -70,5 +98,7 @@
   .result-grid { display: grid; grid-template-columns: 22rem 1fr; gap: 2.5rem; align-items: start; }
   .col-a .r-hero { display: block; text-align: center; }
   .col-a .r-hero .r-illust { margin: 0 auto 0.6rem; width: 200px; height: 200px; }
+  .col-a .r-hero::before { top: 10px; left: calc(50% - 144px); }
+  .col-a .r-hero::after { bottom: auto; top: 176px; left: calc(50% + 104px); }
   .col-b > h2:first-child { margin-top: 0; }
 }
