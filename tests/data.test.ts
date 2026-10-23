@@ -1,5 +1,6 @@
 import { axes, animals, groups, questions, questionSetVersion } from '../src/data';
 import { checkCopy } from './copy';
+import ui from '../data/ui.json';
 
 const sides = axes.flatMap((axis) => (['left', 'right'] as const).map((side) => ({ axis, side, def: axis[side] })));
 
@@ -102,5 +103,12 @@ describe('動物（animals.json）', () => {
     expect(Object.fromEntries(groups.map((g) => [g.id, g.colorName]))).toEqual({
       drive: 'coral', unite: 'yellow', craft: 'mint', care: 'lavender',
     });
+  });
+});
+
+describe('画面の文字（ui.json）', () => {
+  test('文章ルールを守っている', () => {
+    const texts = [ui.appName, ui.lead, ui.notice.title, ...ui.notice.items, ...Object.values(ui.buttons), ui.confirmClear];
+    expect(texts.flatMap(checkCopy)).toEqual([]);
   });
 });

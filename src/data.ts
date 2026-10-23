@@ -1,6 +1,7 @@
 import axesJson from '../data/axes.json';
 import animalsJson from '../data/animals.json';
 import questionsJson from '../data/questions.json';
+import uiJson from '../data/ui.json';
 import type { AxisId, GroupId, Question } from './types';
 
 export type SideDef = {
@@ -59,6 +60,7 @@ export const animals = animalsJson.animals as unknown as AnimalDef[];
 export const questions = questionsJson.questions as Question[];
 export const scaleLabels = questionsJson.scale.labels;
 export const questionSetVersion = questionsJson.version;
+export const ui = uiJson;
 
 export function findAnimal(code: string): AnimalDef {
   const animal = animals.find((a) => a.code === code);
