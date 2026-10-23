@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>介護どうぶつ診断（仮） v1 実装計画</title>
+<style>
+:root {
+  /* Design tokens — UD/ディスレクシア配慮の和紙パレット (~/.claude/rules/html-readability.md 準拠) */
+  --color-bg: #faf8f3;
+  --color-surface: #f3eee3;
+  --color-surface-alt: #ece4d3;
+  --color-border: #e0d6c2;
+  --color-border-strong: #cdbfa3;
+  --color-text: #2a2620;
+  --color-text-secondary: #5c5346;
+  --color-text-muted: #756b59;
+  --color-heading: #5a3a2a;
+  --color-strong: #8b3a3a;
+  --color-link: #2d5a7a;
+  --color-marker: #f9e9b8;
+  --color-primary: #2d5a7a;
+  --color-primary-dark: #234760;
+  --color-primary-light: #e6eef4;
+  --color-success: #4a6b3a;
+  --color-success-light: #e7edd9;
+  --color-warning: #8a5a1a;
+  --color-warning-light: #f6ead2;
+  --color-danger: #8b3a3a;
+  --color-danger-light: #f3e0db;
+  --color-info: #356a80;
+  --color-info-light: #e3eef0;
+  --color-purple: #6a4a78;
+  --color-purple-light: #ece3f0;
+  --font-sans: "UD デジタル 教科書体 N-R", "UD デジタル 教科書体 NK-R", "UD Digi Kyokasho N-R", "UD Digi Kyokasho NK-R", "BIZ UDPGothic", "BIZ UDGothic", "Yu Gothic UI", "Hiragino Sans", "メイリオ", Meiryo, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-heading: "UD デジタル 教科書体 N-B", "UD Digi Kyokasho N-B", "BIZ UDPGothic", "BIZ UDGothic", "Yu Gothic UI", "Hiragino Sans", "メイリオ", Meiryo, sans-serif;
+  --font-mono: "BIZ UDGothic", 'SF Mono', 'Fira Code', Menlo, Consolas, monospace;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 6px;
+  --shadow-sm: 0 1px 3px rgba(42,38,32,0.08);
+  --shadow-md: 0 4px 16px rgba(42,38,32,0.12);
+  --content-width: 820px;
+  --toc-width: 220px;
+}
+
+/* ── Dark mode (和の夜配色・prefers-color-scheme) ── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #1f1c17;
+    --color-surface: #2a2620;
+    --color-surface-alt: #332e26;
+    --color-border: #3a342b;
+    --color-border-strong: #4a4236;
+    --color-text: #ece4d3;
+    --color-text-secondary: #c9bfa9;
+    --color-text-muted: #9c9078;
+    --color-heading: #d4b87f;
+    --color-strong: #e8a890;
+    --color-link: #9bbed6;
+    --color-marker: #4a3e1e;
+    --color-primary: #9bbed6;
+    --color-primary-dark: #b9d3e3;
+    --color-primary-light: #243038;
+    --color-success: #9bbf86;
+    --color-success-light: #2f3a25;
+    --color-warning: #d9b06a;
+    --color-warning-light: #3a2f1c;
+    --color-danger: #e0928a;
+    --color-danger-light: #3a2622;
+    --color-info: #8fb6c4;
+    --color-info-light: #243033;
+    --color-purple: #b89bc6;
+    --color-purple-light: #2e2536;
+    --shadow-sm: 0 1px 3px rgba(8,6,4,0.45);
+    --shadow-md: 0 4px 16px rgba(8,6,4,0.55);
+  }
+}
+
+/* ── Reduced motion 尊重 ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.85;
+  letter-spacing: 0.04em;
+  font-feature-settings: "palt" 1;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Layout ── */
+.doc-header {
+  border-bottom: 3px solid var(--color-primary);
+  padding: 3rem 2rem 2rem;
+  max-width: calc(var(--content-width) + var(--toc-width) + 4rem);
+  margin: 0 auto;
+}
+.doc-logo { margin-bottom: 1.25rem; }
+.doc-logo svg { display: block; }
+.doc-header h1 {
+  font-family: var(--font-heading);
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  color: var(--color-heading);
+  margin-bottom: 0.5rem;
+}
+.doc-header .subtitle {
+  font-size: 1.125rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 1.25rem;
+}
+.doc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+.doc-meta-item {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  padding: 0.25rem 0.625rem;
+}
+.doc-meta-item strong { color: var(--color-text); font-weight: 600; }
+
+.doc-layout {
+  display: grid;
+  grid-template-columns: var(--toc-width) 1fr;
+  gap: 2rem;
+  max-width: calc(var(--content-width) + var(--toc-width) + 4rem);
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* ── TOC Sidebar ── */
+.toc {
+  position: sticky;
+  top: 1.5rem;
+  align-self: start;
+  max-height: calc(100vh - 3rem);
+  overflow-y: auto;
+  font-size: 0.8125rem;
+  padding-right: 1rem;
+  border-right: 1px solid var(--color-border);
+}
+.toc-title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  margin-bottom: 0.75rem;
+}
+.toc ol {
+  list-style: none;
+  padding: 0;
+}
+.toc li { margin-bottom: 0.125rem; }
+.toc a {
+  display: block;
+  padding: 0.25rem 0.5rem;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  border-radius: var(--radius-xs);
+  transition: all 0.15s;
+}
+.toc a:hover { color: var(--color-primary); background: var(--color-primary-light); }
+.toc a.active { color: var(--color-primary); font-weight: 600; background: var(--color-primary-light); }
+.toc .toc-sub { padding-left: 1rem; }
+.toc .toc-sub a { font-size: 0.75rem; }
+
+/* ── Main Content ── */
+.doc-main { max-width: var(--content-width); }
+.doc-main section {
+  margin-bottom: 3rem;
+  scroll-margin-top: 1.5rem;
+}
+.doc-main h2 {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--color-primary);
+  color: var(--color-heading);
+}
+.doc-main h3 {
+  font-family: var(--font-heading);
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--color-heading);
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+}
+.doc-main p { margin-bottom: 1rem; }
+.doc-main ul, .doc-main ol { margin-bottom: 1rem; padding-left: 1.5rem; }
+.doc-main li { margin-bottom: 0.375rem; }
+.doc-main a { color: var(--color-link); text-decoration: underline; text-underline-offset: 0.15em; }
+.doc-main strong { color: var(--color-strong); }
+
+/* ── Summary Cards ── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin: 1.25rem 0;
+}
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+.card-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin-bottom: 0.5rem;
+}
+.card-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 0.375rem;
+}
+.card-detail {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+.card--accent-blue { border-left: 3px solid var(--color-info); }
+.card--accent-green { border-left: 3px solid var(--color-primary); }
+.card--accent-amber { border-left: 3px solid var(--color-warning); }
+.card--accent-red { border-left: 3px solid var(--color-danger); }
+
+/* ── Badges ── */
+.badge {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.1875rem 0.5rem;
+  border-radius: var(--radius-xs);
+  border: 1px solid currentColor; /* 色だけに頼らない: 枠線で識別性を確保 */
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.badge-must   { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-should { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-could  { background: var(--color-info-light); color: var(--color-info); }
+.badge-wont   { background: var(--color-surface-alt); color: var(--color-text-muted); }
+
+.badge-confirmed  { background: var(--color-success-light); color: var(--color-success); }
+.badge-inferred   { background: var(--color-purple-light); color: var(--color-purple); }
+.badge-assumption { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-open       { background: var(--color-info-light); color: var(--color-info); }
+
+.badge-risk-high   { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-risk-medium { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-risk-low    { background: var(--color-success-light); color: var(--color-success); }
+
+/* ── Tables ── */
+.spec-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  margin: 1rem 0 1.5rem;
+}
+.spec-table thead { background: var(--color-surface); }
+.spec-table th {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  text-align: left;
+  padding: 0.625rem 0.75rem;
+  border-bottom: 2px solid var(--color-border-strong);
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.spec-table td {
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+.spec-table tbody tr:hover { background: var(--color-surface); }
+.spec-table code {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  background: var(--color-surface-alt);
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-xs);
+}
+
+/* ── Callouts ── */
+.callout {
+  border-left: 3px solid var(--color-border-strong);
+  background: var(--color-surface);
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 0.9375rem;
+}
+.callout-title {
+  font-weight: 600;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.375rem;
+}
+.callout-info    { border-left-color: var(--color-info);    background: var(--color-info-light); }
+.callout-info .callout-title { color: var(--color-info); }
+.callout-warning { border-left-color: var(--color-warning); background: var(--color-warning-light); }
+.callout-warning .callout-title { color: var(--color-warning); }
+.callout-danger  { border-left-color: var(--color-danger);  background: var(--color-danger-light); }
+.callout-danger .callout-title { color: var(--color-danger); }
+.callout-success { border-left-color: var(--color-success); background: var(--color-success-light); }
+.callout-success .callout-title { color: var(--color-success); }
+
+/* ── Diagrams ── */
+.diagram-container {
+  margin: 1.5rem 0;
+  text-align: center;
+  cursor: zoom-in;
+}
+.diagram-container .mermaid {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.diagram-container:hover .mermaid {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+.diagram-container::after {
+  content: "Click to enlarge";
+  display: block;
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.diagram-container:hover::after { opacity: 1; }
+.diagram-container figcaption {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+/* ── Lightbox Modal (Pan & Zoom) ── */
+.diagram-modal {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(31, 28, 23, 0.72);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: opacity 0.28s ease-out, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.28s;
+}
+.diagram-modal.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.diagram-modal-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 1rem;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+.diagram-modal-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+.diagram-modal-btn {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  border-radius: var(--radius-xs);
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.diagram-modal-btn:hover {
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.diagram-modal-zoom-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  min-width: 3rem;
+  text-align: center;
+}
+.diagram-modal-caption-bar {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.diagram-modal-viewport {
+  flex: 1;
+  overflow: hidden;
+  cursor: grab;
+  background: var(--color-surface);
+  position: relative;
+}
+.diagram-modal-viewport:active { cursor: grabbing; }
+.diagram-modal-content {
+  transform-origin: 0 0;
+  padding: 2rem;
+}
+.diagram-modal-content svg {
+  max-width: none;
+  max-height: none;
+}
+
+@media print { .diagram-modal { display: none !important; } }
+
+/* ── Glossary ── */
+.glossary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+.glossary-item {
+  padding: 0.875rem 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.glossary-term {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  margin-bottom: 0.25rem;
+}
+.glossary-def {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+/* ── Risk Cards ── */
+.risk-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+}
+.risk-card--high   { border-left: 3px solid var(--color-danger); }
+.risk-card--medium { border-left: 3px solid var(--color-warning); }
+.risk-card--low    { border-left: 3px solid var(--color-success); }
+.risk-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.375rem;
+}
+.risk-title { font-weight: 600; font-size: 0.9375rem; }
+.risk-body  { font-size: 0.875rem; color: var(--color-text-secondary); }
+
+/* ── Open Questions ── */
+.question-list {
+  list-style: none;
+  padding: 0;
+}
+.question-list li {
+  padding: 0.75rem 1rem;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-xs);
+  margin-bottom: 0.5rem;
+  font-size: 0.9375rem;
+  background: var(--color-info-light);
+}
+.question-list li::before {
+  content: "?";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: var(--color-info);
+  color: var(--color-bg);
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-right: 0.625rem;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+/* ── Directory Tree ── */
+.tree-view {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.8;
+  white-space: pre;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+.tree-view .dir { color: var(--color-primary-dark); font-weight: 600; }
+.tree-view .file { color: var(--color-text-secondary); }
+.tree-view .comment { color: var(--color-text-muted); font-style: italic; }
+
+/* ── Pyramid Chart ── */
+.pyramid { margin: 1.5rem 0; }
+.pyramid-level {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) 2fr;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.pyramid-bar {
+  border-radius: var(--radius-xs);
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #faf8f3;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.pyramid-bar .count {
+  font-size: 0.6875rem;
+  opacity: 0.8;
+  font-weight: 400;
+}
+.pyramid-detail {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+/* ── Code Blocks ── */
+pre {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  margin: 1rem 0;
+}
+
+/* ── Footer ── */
+.doc-footer {
+  border-top: 1px solid var(--color-border);
+  max-width: calc(var(--content-width) + var(--toc-width) + 4rem);
+  margin: 2rem auto 0;
+  padding: 1.5rem 2rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+.doc-footer p { margin-bottom: 0.25rem; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .doc-layout {
+    grid-template-columns: 1fr;
+    padding: 1.25rem;
+  }
+  .toc {
+    position: static;
+    max-height: none;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    padding-right: 0;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+  }
+  .doc-header { padding: 2rem 1.25rem 1.5rem; }
+  .doc-header h1 { font-size: 1.75rem; }
+  .card-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ── Print ── */
+@media print {
+  body { font-size: 11pt; }
+  .toc, .doc-meta { display: none; }
+  .doc-layout { display: block; }
+  .doc-header { padding: 1rem 0; border-bottom: 2px solid #2a2620; }
+  .doc-main section { page-break-inside: avoid; }
+  .card { border: 1px solid #999; }
+  .badge { border: 1px solid currentColor; }
+  a { color: inherit; text-decoration: none; }
+  .doc-footer { border-top: 1px solid #2a2620; }
+}
+</style>
+<style>
+body { font-size: 18px; }
+.toc { font-size: 0.9rem; }
+.toc-title, .card-label, .callout-title { font-size: 0.875rem; text-transform: none; }
+.badge { font-size: 0.8rem; }
+.spec-table { font-size: 0.95rem; }
+.spec-table th { font-size: 0.9rem; text-transform: none; }
+.card-detail, .doc-meta-item, .risk-body { font-size: 0.95rem; line-height: 1.7; }
+.risk-title { font-size: 1rem; }
+.doc-main p, .doc-main li { max-width: 40em; }
+</style>
+</head>
+<body>
+<header class="doc-header">
+  <h1>介護どうぶつ診断（仮） v1 実装計画</h1>
+  <p class="subtitle">設計書をもとに、どの順番で何を作るかをまとめた計画です</p>
+  <div class="doc-meta">
+    <span class="doc-meta-item"><strong>種類：</strong>実装計画（確認用 HTML）</span>
+    <span class="doc-meta-item"><strong>作成日：</strong>2026-10-23</span>
+    <span class="doc-meta-item"><strong>元の文書：</strong>docs/plans/2026-10-23-kaigo-animal-shindan-v1.md</span>
+    <span class="doc-meta-item"><strong>設計書：</strong>docs/02_requirements.md</span>
+  </div>
+</header>
+
+<div class="doc-layout">
+  <nav class="toc" aria-label="目次">
+    <div class="toc-title">もくじ</div>
+    <ol>
+      <li><a href="#summary">〖0〗 ひとことで言うと</a></li>
+      <li><a href="#tasks">〖1〗 10の作業</a></li>
+      <li><a href="#you">〖2〗 作者の出番</a></li>
+      <li><a href="#focus">〖3〗 特に気をつけること</a></li>
+      <li><a href="#rules">〖4〗 全体の決まり</a></li>
+      <li><a href="#tests">〖5〗 テストで確かめること</a></li>
+      <li><a href="#appendix">〖付録〗 元の文書との対応</a></li>
+    </ol>
+  </nav>
+
+  <main class="doc-main">
+
+    <section id="summary">
+      <h2>〖0〗 ひとことで言うと</h2>
+      <p>作業を<strong>10個</strong>に分けて、1つずつ「テストを書く → 作る → 確かめる → コミット」で進めます。</p>
+      <p>最後に GitHub Pages に載せて、<strong>スマホで使える状態</strong>にするところまでが v1 です。</p>
+      <div class="card-grid">
+        <div class="card card--accent-green"><div class="card-label">◇ 作業の数</div><div class="card-value">10</div><div class="card-detail">土台 → 判定 → 保存 → 文章 → 見た目 → 画面 → イラスト → 公開</div></div>
+        <div class="card card--accent-amber"><div class="card-label">◇ 作者の出番</div><div class="card-value">6回</div><div class="card-detail">書体の入手・文章の確認・動物の確定・イラスト確認・画面確認・公開（〖2〗）</div></div>
+      </div>
+    </section>
+
+    <section id="tasks">
+      <h2>〖1〗 10の作業</h2>
+      <table class="spec-table">
+        <thead><tr><th>番号</th><th>作業</th><th>できあがるもの</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><strong>土台づくり</strong></td><td>Vite＋TypeScript の準備、pnpm の安全設定、JSON を <code>data/</code> へ移動、AGENTS.md / CLAUDE.md</td></tr>
+          <tr><td>2</td><td><strong>判定のしくみ</strong></td><td>40問の答えから5軸の点数・動物・型・グループを出すプログラムとテスト</td></tr>
+          <tr><td>3</td><td><strong>端末への保存</strong></td><td>途中保存・再開・結果の保存。保存できない端末でも止まらない</td></tr>
+          <tr><td>4</td><td><strong>文章ルールと軸の文章</strong></td><td><code>docs/04_writing-guide.md</code>、10の側の「長所とのびしろ」「成長ステップ」の文章</td></tr>
+          <tr><td>5</td><td><strong>質問40問と動物の文章</strong></td><td>質問40問、16動物の「ひとこと」「リーダーとして」「部下として」</td></tr>
+          <tr><td>6</td><td><strong>見た目の土台と書体</strong></td><td>配色（グループ4色）、文字の大きさ、教科書体（Klee One）と BIZ UDPゴシックを小さくして同梱</td></tr>
+          <tr><td>7</td><td><strong>トップと質問の画面</strong></td><td>注意書き、はじめる／つづきから、1画面1問、戻る、進み具合</td></tr>
+          <tr><td>8</td><td><strong>結果の画面</strong></td><td>入口・5つのかたむき・長所とのびしろ・リーダー・部下・成長ステップ</td></tr>
+          <tr><td>9</td><td><strong>イラストとあしらい</strong></td><td>Codex で16匹とあしらいを作り、背景を透明にして配置</td></tr>
+          <tr><td>10</td><td><strong>公開の準備と最終確認</strong></td><td>CSP・自動テスト（CI）・GitHub Pages への自動公開、スマホ幅での確認、公開</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="you">
+      <h2>〖2〗 作者の出番</h2>
+      <p>次のところでは、作業を止めて<strong>作者に確認・許可</strong>をもらいます。</p>
+      <table class="spec-table">
+        <thead><tr><th>いつ</th><th>お願いすること</th></tr></thead>
+        <tbody>
+          <tr><td>作業6の最初</td><td>△ 書体ファイルを入手してよいか（入手先と大きさをお伝えします）</td></tr>
+          <tr><td>作業8のあと</td><td>◇ 動く画面で、<strong>質問と文章を読んで直す</strong>（直しは <code>data/</code> だけ）</td></tr>
+          <tr><td>作業9の最初</td><td>◇ <strong>動物16種の一覧</strong>を確定する</td></tr>
+          <tr><td>作業9の終わり</td><td>◇ 16匹とあしらいのタッチを見る（ずれたものだけ作り直し）</td></tr>
+          <tr><td>作業10の途中</td><td>◇ スマホ・タブレット・パソコン幅の画面写真を見る</td></tr>
+          <tr><td>作業10の最後</td><td>△ <strong>リポジトリ名を決めて、GitHub に公開してよいか</strong></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="focus">
+      <h2>〖3〗 特に気をつけること（使う人がつまずきやすい場面）</h2>
+      <p>設計書に書いていないけれど、実際に使うと起きやすいことです。どれもテストで確かめます。</p>
+      <div class="risk-card risk-card--high"><div class="risk-header"><span class="badge badge-risk-high">① よく起きる</span><span class="risk-title">質問の途中で再読み込み・「戻る」で離れた</span></div><div class="risk-body">もう一度開くと「つづきから」が出て、同じ問題・同じ答えから再開できる。</div></div>
+      <div class="risk-card risk-card--high"><div class="risk-header"><span class="badge badge-risk-high">② よく起きる</span><span class="risk-title">保存できない端末（Safari のプライベートモードなど）</span></div><div class="risk-body">エラーで止まらず、その場では最後まで診断できる。</div></div>
+      <div class="risk-card risk-card--medium"><div class="risk-header"><span class="badge badge-risk-medium">③ ときどき</span><span class="risk-title">質問を直したあとに、古い途中データが残っている</span></div><div class="risk-body">古いデータを捨てて最初から。壊れた表示にならない。</div></div>
+      <div class="risk-card risk-card--medium"><div class="risk-header"><span class="badge badge-risk-medium">④ ときどき</span><span class="risk-title">スマホでの連続タップ</span></div><div class="risk-body">1回のタップで1問だけ進む。次の問題に誤って答えが入らない（0.3秒以内の2回目は無視）。</div></div>
+      <div class="risk-card risk-card--low"><div class="risk-header"><span class="badge badge-risk-low">⑤ 一部の人</span><span class="risk-title">文字を大きくしている・幅 320px の小さいスマホ</span></div><div class="risk-body">横スクロールが出ず、ボタンが折り返して押せる。</div></div>
+    </section>
+
+    <section id="rules">
+      <h2>〖4〗 全体の決まり（すべての作業で守ること）</h2>
+      <ul>
+        <li>〇 サーバーで動くプログラムを持たない。回答は<strong>端末の中だけ</strong></li>
+        <li>〇 Vite は <strong>8.0.16 以上</strong>。開発用サーバーをネットワークに出さない</li>
+        <li>〇 pnpm の安全設定（公開24時間未満の部品は入れない など）。<strong>公式の説明で確かめてから</strong>書く</li>
+        <li>〇 画面に文字を入れるときは <code>textContent</code> だけ（<code>innerHTML</code> を使わない。テストで見張る）</li>
+        <li>〇 本番の画面に CSP（よそからの読み込み禁止）と「検索に載せない」設定</li>
+        <li>〇 文字 18/19/20px、15px 未満なし、行間 1.85、真っ白・真っ黒なし、コントラスト 4.5:1 以上（テストで見張る）</li>
+        <li>〇 画面で「短所」と書かない。「〜かもしれません」で決めつけない（テストで見張る）</li>
+      </ul>
+    </section>
+
+    <section id="tests">
+      <h2>〖5〗 テストで確かめること（主なもの）</h2>
+      <table class="spec-table">
+        <thead><tr><th>作業</th><th>確かめること</th></tr></thead>
+        <tbody>
+          <tr><td>2 判定</td><td>答えから点数が正しく出る（例：右側寄り度 28.125 →「72％」）。40.625 と 59.375 はバランス型、37.5 と 62.5 はちがう。50 ちょうどは右側。答えが足りないと結果を出さない</td></tr>
+          <tr><td>3 保存</td><td>読み戻せる・壊れたデータは初期化・質問の版が違えば初期化・保存できなくても止まらない</td></tr>
+          <tr><td>4・5 文章</td><td>質問は40問・各軸8問・逆向き4問・となり同士が同じ軸にならない。のびしろは一文。強みのほうが長い。1文50字以内。「短所」を含まない。入口に弱みの文が入らない</td></tr>
+          <tr><td>6 見た目</td><td>コントラスト 4.5:1 以上（ライト・ダーク）、15px 未満なし、禁止色なし、斜体なし</td></tr>
+          <tr><td>7・8 画面</td><td>〖3〗の①〜④、注意書き、結果の並び順、成長ステップの選択と保存、「結果を消す」の確認</td></tr>
+          <tr><td>10 公開</td><td>本番の画面に CSP と「検索に載せない」があり、外部の読み込みがない。幅 320〜1200px で横スクロールなし</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="appendix">
+      <h2>〖付録〗 元の文書との対応</h2>
+      <p>この HTML は <code>docs/plans/2026-10-23-kaigo-animal-shindan-v1.md</code> を、作者の確認用に要約したものです。<br>関数の名前やテストの細かい値などは、作る人向けなので Markdown だけに書いています。内容が食いちがうときは Markdown が正です。</p>
+    </section>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  <p>元の文書：<strong>docs/plans/2026-10-23-kaigo-animal-shindan-v1.md</strong>（2026-10-23）</p>
+  <p>外部の読み込みはありません（1つのファイルで開けます）。</p>
+</footer>
+
+<!-- Lightbox modal for diagrams (Pan & Zoom) -->
+<div class="diagram-modal" id="diagramModal" role="dialog" aria-modal="true" aria-label="拡大した図">
+  <div class="diagram-modal-toolbar">
+    <div class="diagram-modal-toolbar-group">
+      <button class="diagram-modal-btn" id="zoomOut" aria-label="Zoom out">&minus;</button>
+      <span class="diagram-modal-zoom-label" id="zoomLabel">100%</span>
+      <button class="diagram-modal-btn" id="zoomIn" aria-label="Zoom in">+</button>
+      <button class="diagram-modal-btn" id="zoomReset" aria-label="Reset zoom" style="font-size:0.6875rem;width:auto;padding:0 0.5rem;">元に戻す</button>
+    </div>
+    <span class="diagram-modal-caption-bar" id="modalCaption"></span>
+    <button class="diagram-modal-btn" id="modalClose" aria-label="Close">&times;</button>
+  </div>
+  <div class="diagram-modal-viewport" id="modalViewport">
+    <div class="diagram-modal-content" id="modalContent"></div>
+  </div>
+</div>
+
+<!-- ============================
+     SCRIPTS
+     Mermaid CDN for diagram rendering.
+     Remove if using inline SVG only.
+     ============================ -->
+<script>
+
+  // Diagram Pan & Zoom viewer
+  (function() {
+    var modal = document.getElementById('diagramModal');
+    var viewport = document.getElementById('modalViewport');
+    var content = document.getElementById('modalContent');
+    var caption = document.getElementById('modalCaption');
+    var zoomLabel = document.getElementById('zoomLabel');
+    var btnClose = document.getElementById('modalClose');
+    var btnIn = document.getElementById('zoomIn');
+    var btnOut = document.getElementById('zoomOut');
+    var btnReset = document.getElementById('zoomReset');
+
+    var scale = 1, panX = 0, panY = 0, fitScale = 1;
+    var dragging = false, startX = 0, startY = 0, startPanX = 0, startPanY = 0;
+    var MIN_SCALE = 0.1, MAX_SCALE = 5, STEP = 0.25;
+
+    function applyTransform() {
+      content.style.transform = 'translate(' + panX + 'px,' + panY + 'px) scale(' + scale + ')';
+      zoomLabel.textContent = Math.round(scale * 100) + '%';
+    }
+
+    function fitToView() {
+      scale = 1; panX = 0; panY = 0;
+      content.style.transform = 'none';
+      requestAnimationFrame(function() {
+        var svg = content.querySelector('svg');
+        if (!svg) { applyTransform(); return; }
+
+        var vw = viewport.clientWidth;
+        var vh = viewport.clientHeight;
+        var rect = svg.getBoundingClientRect();
+        var svgW = rect.width;
+        var svgH = rect.height;
+
+        if (!svgW || !svgH) { applyTransform(); return; }
+
+        var PAD = 48;
+        fitScale = Math.min((vw - PAD * 2) / svgW, (vh - PAD * 2) / svgH);
+        fitScale = Math.min(fitScale, 2);
+        fitScale = Math.max(fitScale, MIN_SCALE);
+        scale = fitScale;
+
+        panX = (vw - svgW * scale) / 2;
+        panY = (vh - svgH * scale) / 2;
+        applyTransform();
+      });
+    }
+
+    function zoomBy(delta, cx, cy) {
+      var prev = scale;
+      scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale + delta));
+      if (cx !== undefined && cy !== undefined) {
+        var ratio = scale / prev;
+        panX = cx - ratio * (cx - panX);
+        panY = cy - ratio * (cy - panY);
+      }
+      applyTransform();
+    }
+
+    function openModal(figure) {
+      var svg = figure.querySelector('svg');
+      var mermaidDiv = figure.querySelector('.mermaid');
+      var figcap = figure.querySelector('figcaption');
+
+      content.innerHTML = '';
+      if (svg) {
+        var clone = svg.cloneNode(true);
+        clone.removeAttribute('style');
+        content.appendChild(clone);
+      } else if (mermaidDiv) {
+        content.innerHTML = mermaidDiv.innerHTML;
+      }
+
+      caption.textContent = figcap ? figcap.textContent : '';
+      modal.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+      fitToView();
+    }
+
+    function closeModal() {
+      modal.classList.remove('is-open');
+      document.body.style.overflow = '';
+    }
+
+    // Open from diagram click
+    document.querySelectorAll('.diagram-container').forEach(function(fig) {
+      fig.addEventListener('click', function(e) {
+        if (e.target.closest('a')) return;
+        openModal(fig);
+      });
+    });
+
+    // Toolbar buttons
+    btnClose.addEventListener('click', closeModal);
+    btnIn.addEventListener('click', function() { zoomBy(STEP); });
+    btnOut.addEventListener('click', function() { zoomBy(-STEP); });
+    btnReset.addEventListener('click', fitToView);
+
+    // Mouse wheel zoom (centered on cursor)
+    viewport.addEventListener('wheel', function(e) {
+      e.preventDefault();
+      var rect = viewport.getBoundingClientRect();
+      var cx = e.clientX - rect.left;
+      var cy = e.clientY - rect.top;
+      var delta = e.deltaY < 0 ? STEP : -STEP;
+      zoomBy(delta, cx, cy);
+    }, { passive: false });
+
+    // Mouse drag to pan
+    viewport.addEventListener('mousedown', function(e) {
+      if (e.button !== 0) return;
+      dragging = true;
+      startX = e.clientX; startY = e.clientY;
+      startPanX = panX; startPanY = panY;
+    });
+    window.addEventListener('mousemove', function(e) {
+      if (!dragging) return;
+      panX = startPanX + (e.clientX - startX);
+      panY = startPanY + (e.clientY - startY);
+      applyTransform();
+    });
+    window.addEventListener('mouseup', function() { dragging = false; });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      if (!modal.classList.contains('is-open')) return;
+      if (e.key === 'Escape') closeModal();
+      else if (e.key === '+' || e.key === '=') zoomBy(STEP);
+      else if (e.key === '-') zoomBy(-STEP);
+      else if (e.key === '0') fitToView();
+    });
+  })();
+
+  // TOC: highlight active section on scroll
+  (function() {
+    var links = document.querySelectorAll('.toc a[href^="#"]');
+    var sections = Array.from(links).map(function(a) { return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+    if (!sections.length) return;
+    function onScroll() {
+      var current = sections[0];
+      for (var i = 0; i < sections.length; i++) {
+        if (sections[i].getBoundingClientRect().top <= 80) current = sections[i];
+      }
+      links.forEach(function(a) {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + current.id);
+      });
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+</body>
+</html>
