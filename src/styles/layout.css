@@ -47,6 +47,7 @@
 
 /* 結果：成長ステップ */
 .chips { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 0.6rem 0 1.1rem; }
+.chips button[aria-pressed="true"]::before { content: "✓ "; }
 .steps { list-style: none; padding: 0; margin: 0 0 1rem; }
 .steps li { border-left: 4px solid var(--group-strong, var(--accent)); padding: 0.2rem 0 0.9rem 1rem; }
 .steps .when { display: block; font-family: var(--font-ui); font-weight: 700; color: var(--head); }
@@ -67,7 +68,6 @@
 @media (min-width: 1000px) {
   .screen.result { max-width: 74rem; }
   .result-grid { display: grid; grid-template-columns: 22rem 1fr; gap: 2.5rem; align-items: start; }
-  .col-a { position: sticky; top: 1rem; }
   .col-a .r-hero { display: block; text-align: center; }
   .col-a .r-hero .r-illust { margin: 0 auto 0.6rem; width: 200px; height: 200px; }
   .col-b > h2:first-child { margin-top: 0; }

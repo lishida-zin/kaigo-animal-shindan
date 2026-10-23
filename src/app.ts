@@ -1,9 +1,10 @@
-import { h } from './dom';
-import { questions } from './data';
+import { axes, balanceRange, groups, questions, ui } from './data';
+import { diagnose, isComplete } from './scoring';
 import type { Store } from './storage';
 import type { Answer } from './types';
 import { renderTop } from './screens/top';
 import { renderQuiz } from './screens/quiz';
+import { renderResult } from './screens/result';
 
 export type Screen = 'top' | 'quiz' | 'result';
 
@@ -65,8 +66,19 @@ export function createApp(root: HTMLElement, deps: AppDeps): { show(screen: Scre
   }
 
   function showResult(): void {
-    // 結果画面は Task 8 で作る
-    mount(h('section', { class: 'screen result', 'data-screen': 'result' }));
+    const { answers } = store.get();
+    if (!isComplete(questions, answers)) return show('top');
+    const el = renderResult({
+      diagnosis: diagnose(questions, answers, axes, groups, balanceRange),
+      store,
+      onRetry: startFresh,
+      onClear() {
+        if (!deps.confirm(ui.confirmClear)) return;
+        store.reset();
+        show('top');
+      },
+    });
+    mount(el, el.querySelector<HTMLElement>('.r-name'));
   }
 
   function show(screen: Screen): void {
