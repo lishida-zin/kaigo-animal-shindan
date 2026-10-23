@@ -8,7 +8,9 @@
     "node": ">=22.12"
   },
   "scripts": {
+    "predev": "node scripts/subset-fonts.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/subset-fonts.mjs",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
