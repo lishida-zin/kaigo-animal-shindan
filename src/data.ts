@@ -9,13 +9,24 @@ export interface SideDef {
   strength: string;
   weakness: string;
   tip: string;
+  /** ★ あなたの力（太字の一文） */
+  strengthLead: string;
+  /** 介護の場面で書いた強み */
+  scene: string;
+  /** 強みがのびた先 */
+  future: string;
+  growth: { day1: string; month1: string; month3: string; goal: string };
   typeName?: string;
+  /** 入口に出す型の一文（E 軸のみ） */
+  typeSentence?: string;
 }
 
 export interface AxisDef {
   id: AxisId;
   name: string;
   trait: string;
+  /** 軸を見分けるアイコン（絵文字） */
+  icon: string;
   left: SideDef;
   right: SideDef;
 }
@@ -36,7 +47,7 @@ export interface AnimalDef {
   catch: string;
 }
 
-export const axes = axesJson.axes as AxisDef[];
+export const axes = axesJson.axes as unknown as AxisDef[];
 export const balanceRange = axesJson.balanceRange as unknown as readonly [number, number];
 export const groups = animalsJson.groups as GroupDef[];
 export const animals = animalsJson.animals as AnimalDef[];
