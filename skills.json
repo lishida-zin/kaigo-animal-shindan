@@ -1,0 +1,45 @@
+{
+  "version": "0.1",
+  "note": "スキル項目。1項目ごとに「好き」と「得意」を5段階で答える。2つの組み合わせで4つに分類する。",
+  "scale": { "points": 5, "threshold": 3.5 },
+  "quadrants": [
+    { "id": "strength", "like": "high", "good": "high", "label": "強み",       "message": "あなたの武器です。後輩に教える役も向いています" },
+    { "id": "growth",   "like": "high", "good": "low",  "label": "伸びしろ",   "message": "好きなので、練習すればぐんと伸びます" },
+    { "id": "burden",   "like": "low",  "good": "high", "label": "負担に注意", "message": "できるけれど疲れやすい仕事です。かたよらないよう調整を" },
+    { "id": "support",  "like": "low",  "good": "low",  "label": "支えが必要", "message": "得意な人と組むと安心です" }
+  ],
+  "categories": [
+    {
+      "id": "care",
+      "name": "介護スキル",
+      "items": [
+        { "id": "meal",      "name": "食事介助" },
+        { "id": "toilet",    "name": "排泄介助" },
+        { "id": "bath",      "name": "入浴介助" },
+        { "id": "transfer",  "name": "移乗・移動" },
+        { "id": "dressing",  "name": "着脱・整容" },
+        { "id": "dementia",  "name": "認知症の方への関わり" },
+        { "id": "talk",      "name": "利用者との会話" },
+        { "id": "family",    "name": "家族対応" },
+        { "id": "rec",       "name": "レク企画・人前での進行" },
+        { "id": "quietwork", "name": "黙々とする作業" },
+        { "id": "record",    "name": "記録" }
+      ],
+      "pending": ["看取り", "夜勤", "緊急時対応"]
+    },
+    {
+      "id": "business",
+      "name": "ビジネススキル",
+      "items": [
+        { "id": "report",  "name": "上司への報告・相談" },
+        { "id": "phone",   "name": "電話対応" },
+        { "id": "pc",      "name": "パソコン・記録入力" },
+        { "id": "time",    "name": "時間管理・段取り" },
+        { "id": "teach",   "name": "後輩指導" },
+        { "id": "team",    "name": "他職種との連携" },
+        { "id": "meeting", "name": "会議で意見を言う" },
+        { "id": "change",  "name": "急な変更への対応" }
+      ]
+    }
+  ]
+}

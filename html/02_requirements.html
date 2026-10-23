@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>介護どうぶつ診断（仮） 設計書 v1</title>
+<style>
+:root {
+  /* Design tokens — UD/ディスレクシア配慮の和紙パレット (~/.claude/rules/html-readability.md 準拠) */
+  --color-bg: #faf8f3;
+  --color-surface: #f3eee3;
+  --color-surface-alt: #ece4d3;
+  --color-border: #e0d6c2;
+  --color-border-strong: #cdbfa3;
+  --color-text: #2a2620;
+  --color-text-secondary: #5c5346;
+  --color-text-muted: #756b59;
+  --color-heading: #5a3a2a;
+  --color-strong: #8b3a3a;
+  --color-link: #2d5a7a;
+  --color-marker: #f9e9b8;
+  --color-primary: #2d5a7a;
+  --color-primary-dark: #234760;
+  --color-primary-light: #e6eef4;
+  --color-success: #4a6b3a;
+  --color-success-light: #e7edd9;
+  --color-warning: #8a5a1a;
+  --color-warning-light: #f6ead2;
+  --color-danger: #8b3a3a;
+  --color-danger-light: #f3e0db;
+  --color-info: #356a80;
+  --color-info-light: #e3eef0;
+  --color-purple: #6a4a78;
+  --color-purple-light: #ece3f0;
+  --font-sans: "UD デジタル 教科書体 N-R", "UD デジタル 教科書体 NK-R", "UD Digi Kyokasho N-R", "UD Digi Kyokasho NK-R", "BIZ UDPGothic", "BIZ UDGothic", "Yu Gothic UI", "Hiragino Sans", "メイリオ", Meiryo, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-heading: "UD デジタル 教科書体 N-B", "UD Digi Kyokasho N-B", "BIZ UDPGothic", "BIZ UDGothic", "Yu Gothic UI", "Hiragino Sans", "メイリオ", Meiryo, sans-serif;
+  --font-mono: "BIZ UDGothic", 'SF Mono', 'Fira Code', Menlo, Consolas, monospace;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 6px;
+  --shadow-sm: 0 1px 3px rgba(42,38,32,0.08);
+  --shadow-md: 0 4px 16px rgba(42,38,32,0.12);
+  --content-width: 820px;
+  --toc-width: 220px;
+}
+
+/* ── Dark mode (和の夜配色・prefers-color-scheme) ── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #1f1c17;
+    --color-surface: #2a2620;
+    --color-surface-alt: #332e26;
+    --color-border: #3a342b;
+    --color-border-strong: #4a4236;
+    --color-text: #ece4d3;
+    --color-text-secondary: #c9bfa9;
+    --color-text-muted: #9c9078;
+    --color-heading: #d4b87f;
+    --color-strong: #e8a890;
+    --color-link: #9bbed6;
+    --color-marker: #4a3e1e;
+    --color-primary: #9bbed6;
+    --color-primary-dark: #b9d3e3;
+    --color-primary-light: #243038;
+    --color-success: #9bbf86;
+    --color-success-light: #2f3a25;
+    --color-warning: #d9b06a;
+    --color-warning-light: #3a2f1c;
+    --color-danger: #e0928a;
+    --color-danger-light: #3a2622;
+    --color-info: #8fb6c4;
+    --color-info-light: #243033;
+    --color-purple: #b89bc6;
+    --color-purple-light: #2e2536;
+    --shadow-sm: 0 1px 3px rgba(8,6,4,0.45);
+    --shadow-md: 0 4px 16px rgba(8,6,4,0.55);
+  }
+}
+
+/* ── Reduced motion 尊重 ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.85;
+  letter-spacing: 0.04em;
+  font-feature-settings: "palt" 1;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Layout ── */
+.doc-header {
+  border-bottom: 3px solid var(--color-primary);
+  padding: 3rem 2rem 2rem;
+  max-width: calc(var(--content-width) + var(--toc-width) + 4rem);
+  margin: 0 auto;
+}
+.doc-logo { margin-bottom: 1.25rem; }
+.doc-logo svg { display: block; }
+.doc-header h1 {
+  font-family: var(--font-heading);
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  color: var(--color-heading);
+  margin-bottom: 0.5rem;
+}
+.doc-header .subtitle {
+  font-size: 1.125rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 1.25rem;
+}
+.doc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+.doc-meta-item {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  padding: 0.25rem 0.625rem;
+}
+.doc-meta-item strong { color: var(--color-text); font-weight: 600; }
+
+.doc-layout {
+  display: grid;
+  grid-template-columns: var(--toc-width) 1fr;
+  gap: 2rem;
+  max-width: calc(var(--content-width) + var(--toc-width) + 4rem);
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* ── TOC Sidebar ── */
+.toc {
+  position: sticky;
+  top: 1.5rem;
+  align-self: start;
+  max-height: calc(100vh - 3rem);
+  overflow-y: auto;
+  font-size: 0.8125rem;
+  padding-right: 1rem;
+  border-right: 1px solid var(--color-border);
+}
+.toc-title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  margin-bottom: 0.75rem;
+}
+.toc ol {
+  list-style: none;
+  padding: 0;
+}
+.toc li { margin-bottom: 0.125rem; }
+.toc a {
+  display: block;
+  padding: 0.25rem 0.5rem;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  border-radius: var(--radius-xs);
+  transition: all 0.15s;
+}
+.toc a:hover { color: var(--color-primary); background: var(--color-primary-light); }
+.toc a.active { color: var(--color-primary); font-weight: 600; background: var(--color-primary-light); }
+.toc .toc-sub { padding-left: 1rem; }
+.toc .toc-sub a { font-size: 0.75rem; }
+
+/* ── Main Content ── */
+.doc-main { max-width: var(--content-width); }
+.doc-main section {
+  margin-bottom: 3rem;
+  scroll-margin-top: 1.5rem;
+}
+.doc-main h2 {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--color-primary);
+  color: var(--color-heading);
+}
+.doc-main h3 {
+  font-family: var(--font-heading);
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--color-heading);
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+}
+.doc-main p { margin-bottom: 1rem; }
+.doc-main ul, .doc-main ol { margin-bottom: 1rem; padding-left: 1.5rem; }
+.doc-main li { margin-bottom: 0.375rem; }
+.doc-main a { color: var(--color-link); text-decoration: underline; text-underline-offset: 0.15em; }
+.doc-main strong { color: var(--color-strong); }
+
+/* ── Summary Cards ── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin: 1.25rem 0;
+}
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+.card-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin-bottom: 0.5rem;
+}
+.card-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 0.375rem;
+}
+.card-detail {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+.card--accent-blue { border-left: 3px solid var(--color-info); }
+.card--accent-green { border-left: 3px solid var(--color-primary); }
+.card--accent-amber { border-left: 3px solid var(--color-warning); }
+.card--accent-red { border-left: 3px solid var(--color-danger); }
+
+/* ── Badges ── */
+.badge {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.1875rem 0.5rem;
+  border-radius: var(--radius-xs);
+  border: 1px solid currentColor; /* 色だけに頼らない: 枠線で識別性を確保 */
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.badge-must   { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-should { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-could  { background: var(--color-info-light); color: var(--color-info); }
+.badge-wont   { background: var(--color-surface-alt); color: var(--color-text-muted); }
+
+.badge-confirmed  { background: var(--color-success-light); color: var(--color-success); }
+.badge-inferred   { background: var(--color-purple-light); color: var(--color-purple); }
+.badge-assumption { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-open       { background: var(--color-info-light); color: var(--color-info); }
+
+.badge-risk-high   { background: var(--color-danger-light); color: var(--color-danger); }
+.badge-risk-medium { background: var(--color-warning-light); color: var(--color-warning); }
+.badge-risk-low    { background: var(--color-success-light); color: var(--color-success); }
+
+/* ── Tables ── */
+.spec-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  margin: 1rem 0 1.5rem;
+}
+.spec-table thead { background: var(--color-surface); }
+.spec-table th {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  text-align: left;
+  padding: 0.625rem 0.75rem;
+  border-bottom: 2px solid var(--color-border-strong);
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.spec-table td {
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+.spec-table tbody tr:hover { background: var(--color-surface); }
+.spec-table code {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  background: var(--color-surface-alt);
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-xs);
+}
+
+/* ── Callouts ── */
+.callout {
+  border-left: 3px solid var(--color-border-strong);
+  background: var(--color-surface);
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 0.9375rem;
+}
+.callout-title {
+  font-weight: 600;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.375rem;
+}
+.callout-info    { border-left-color: var(--color-info);    background: var(--color-info-light); }
+.callout-info .callout-title { color: var(--color-info); }
+.callout-warning { border-left-color: var(--color-warning); background: var(--color-warning-light); }
+.callout-warning .callout-title { color: var(--color-warning); }
+.callout-danger  { border-left-color: var(--color-danger);  background: var(--color-danger-light); }
+.callout-danger .callout-title { color: var(--color-danger); }
+.callout-success { border-left-color: var(--color-success); background: var(--color-success-light); }
+.callout-success .callout-title { color: var(--color-success); }
+
+/* ── Diagrams ── */
+.diagram-container {
+  margin: 1.5rem 0;
+  text-align: center;
+  cursor: zoom-in;
+}
+.diagram-container .mermaid {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.diagram-container:hover .mermaid {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+.diagram-container::after {
+  content: "Click to enlarge";
+  display: block;
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.diagram-container:hover::after { opacity: 1; }
+.diagram-container figcaption {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+/* ── Lightbox Modal (Pan & Zoom) ── */
+.diagram-modal {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(31, 28, 23, 0.72);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: opacity 0.28s ease-out, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.28s;
+}
+.diagram-modal.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.diagram-modal-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 1rem;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+.diagram-modal-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+.diagram-modal-btn {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  border-radius: var(--radius-xs);
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.diagram-modal-btn:hover {
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.diagram-modal-zoom-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  min-width: 3rem;
+  text-align: center;
+}
+.diagram-modal-caption-bar {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.diagram-modal-viewport {
+  flex: 1;
+  overflow: hidden;
+  cursor: grab;
+  background: var(--color-surface);
+  position: relative;
+}
+.diagram-modal-viewport:active { cursor: grabbing; }
+.diagram-modal-content {
+  transform-origin: 0 0;
+  padding: 2rem;
+}
+.diagram-modal-content svg {
+  max-width: none;
+  max-height: none;
+}
+
+@media print { .diagram-modal { display: none !important; } }
+
+/* ── Glossary ── */
+.glossary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+.glossary-item {
+  padding: 0.875rem 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.glossary-term {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  margin-bottom: 0.25rem;
+}
+.glossary-def {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+/* ── Risk Cards ── */
+.risk-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+}
+.risk-card--high   { border-left: 3px solid var(--color-danger); }
+.risk-card--medium { border-left: 3px solid var(--color-warning); }
+.risk-card--low    { border-left: 3px solid var(--color-success); }
+.risk-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.375rem;
+}
+.risk-title { font-weight: 600; font-size: 0.9375rem; }
+.risk-body  { font-size: 0.875rem; color: var(--color-text-secondary); }
+
+/* ── Open Questions ── */
+.question-list {
+  list-style: none;
+  padding: 0;
+}
+.question-list li {
+  padding: 0.75rem 1rem;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-xs);
+  margin-bottom: 0.5rem;
+  font-size: 0.9375rem;
+  background: var(--color-info-light);
+}
+.question-list li::before {
+  content: "?";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: var(--color-info);
+  color: var(--color-bg);
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-right: 0.625rem;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+/* ── Directory Tree ── */
+.tree-view {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.8;
+  white-space: pre;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+.tree-view .dir { color: var(--color-primary-dark); font-weight: 600; }
+.tree-view .file { color: var(--color-text-secondary); }
+.tree-view .comment { color: var(--color-text-muted); font-style: italic; }
+
+/* ── Pyramid Chart ── */
+.pyramid { margin: 1.5rem 0; }
+.pyramid-level {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) 2fr;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.pyramid-bar {
+  border-radius: var(--radius-xs);
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #faf8f3;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.pyramid-bar .count {
+  font-size: 0.6875rem;
+  opacity: 0.8;
+  font-weight: 400;
+}
+.pyramid-detail {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+/* ── Code Blocks ── */
+pre {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  margin: 1rem 0;
+}
+
+/* ── Footer ── */
+.doc-footer {
+  border-top: 1px solid var(--color-border);
+  max-width: calc(var(--content-width) + var(--toc-width) + 4rem);
+  margin: 2rem auto 0;
+  padding: 1.5rem 2rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+.doc-footer p { margin-bottom: 0.25rem; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .doc-layout {
+    grid-template-columns: 1fr;
+    padding: 1.25rem;
+  }
+  .toc {
+    position: static;
+    max-height: none;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    padding-right: 0;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+  }
+  .doc-header { padding: 2rem 1.25rem 1.5rem; }
+  .doc-header h1 { font-size: 1.75rem; }
+  .card-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ── Print ── */
+@media print {
+  body { font-size: 11pt; }
+  .toc, .doc-meta { display: none; }
+  .doc-layout { display: block; }
+  .doc-header { padding: 1rem 0; border-bottom: 2px solid #2a2620; }
+  .doc-main section { page-break-inside: avoid; }
+  .card { border: 1px solid #999; }
+  .badge { border: 1px solid currentColor; }
+  a { color: inherit; text-decoration: none; }
+  .doc-footer { border-top: 1px solid #2a2620; }
+}
+</style>
+<style>
+/* 追加：このドキュメント用の調整（読みやすさ・見本色） */
+:root { --sw-coral:#f08a6c; --sw-yellow:#f5c84c; --sw-mint:#8fd3b8; --sw-lavender:#b597dd; }
+body { font-size: 18px; }
+.toc { font-size: 0.9rem; }
+.toc .toc-sub a { font-size: 0.85rem; }
+.toc-title, .card-label, .callout-title { font-size: 0.875rem; text-transform: none; }
+.badge { font-size: 0.8rem; }
+.spec-table { font-size: 0.95rem; }
+.spec-table th { font-size: 0.9rem; text-transform: none; }
+.card-detail, .glossary-def, .doc-meta-item { font-size: 0.9rem; line-height: 1.7; }
+.diagram-container figcaption, figcaption { font-style: normal; font-size: 0.9rem; color: var(--color-text-secondary); }
+.diagram-container svg { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 0.75rem; }
+.diagram-container::after { content: "クリックで拡大"; font-size: 0.8rem; }
+.swatch { display:inline-block; width:1.4em; height:1.4em; border-radius:50%; border:2px solid var(--color-border-strong); vertical-align:middle; margin-right:0.4em; }
+.doc-main p, .doc-main li { max-width: 40em; }
+</style>
+</head>
+<body>
+<header class="doc-header">
+  <h1>介護どうぶつ診断（仮） 設計書 v1</h1>
+  <p class="subtitle">介護リーダーが「自分のリーダータイプ」を知り、長所を生かして成長するための診断Webアプリ</p>
+  <div class="doc-meta">
+    <span class="doc-meta-item"><strong>種類：</strong>設計書（確認用 HTML）</span>
+    <span class="doc-meta-item"><strong>版：</strong>v1 ドラフト</span>
+    <span class="doc-meta-item"><strong>作成日：</strong>2026-10-23</span>
+    <span class="doc-meta-item"><strong>読む人：</strong>作者・説明を受ける第三者</span>
+    <span class="doc-meta-item"><strong>元の文書：</strong>docs/02_requirements.md</span>
+  </div>
+</header>
+
+<div class="doc-layout">
+
+  <nav class="toc" aria-label="目次">
+    <div class="toc-title">もくじ</div>
+    <ol>
+      <li><a href="#summary">〖0〗 ひとことで言うと</a></li>
+      <li><a href="#check">〖1〗 確認してほしいこと</a></li>
+      <li><a href="#why">〖2〗 なぜ作るのか</a></li>
+      <li><a href="#concepts">〖3〗 ことばの説明</a></li>
+      <li><a href="#model">〖4〗 診断のしくみ</a></li>
+      <li><a href="#flow">〖5〗 画面の流れ</a></li>
+      <li><a href="#result">〖6〗 結果ページ</a></li>
+      <li><a href="#writing">〖7〗 文章の書き方</a></li>
+      <li><a href="#design">〖8〗 見た目</a></li>
+      <li><a href="#illust">〖9〗 イラストの作り方</a></li>
+      <li><a href="#tools">〖10〗 なぜこの作り方か</a></li>
+      <li><a href="#security">〖11〗 セキュリティ</a></li>
+      <li><a href="#publish">〖12〗 公開のしかた</a></li>
+      <li><a href="#later">〖13〗 あとの版・進め方</a></li>
+      <li><a href="#open">〖14〗 まだ決めていないこと</a></li>
+      <li><a href="#appendix">〖付録〗 元の文書との対応</a></li>
+    </ol>
+  </nav>
+
+  <main class="doc-main">
+
+    <!-- 0 -->
+    <section id="summary">
+      <h2>〖0〗 ひとことで言うと</h2>
+      <p>40問に答えると、<strong>動物のキャラ</strong>で自分のリーダータイプがわかる Web アプリです。</p>
+      <p>結果では、長所と「のびしろ」、リーダー・部下としての特徴を読めます。<br>さらに、<strong>のばしたいところを自分で選ぶと、半年分の成長ステップ</strong>が出ます。</p>
+      <p>回答は<strong>自分のスマホの中だけ</strong>に保存し、どこにも送りません。</p>
+
+      <div class="card-grid">
+        <div class="card card--accent-green">
+          <div class="card-label">◇ 質問の数</div>
+          <div class="card-value">40問</div>
+          <div class="card-detail">5本の軸 × 8問。5段階で答える</div>
+        </div>
+        <div class="card card--accent-blue">
+          <div class="card-label">◇ タイプ</div>
+          <div class="card-value">16動物 × 2型</div>
+          <div class="card-detail">4つのグループに分かれる</div>
+        </div>
+        <div class="card card--accent-amber">
+          <div class="card-label">◇ v1 のゴール</div>
+          <div class="card-value">スマホで使える</div>
+          <div class="card-detail">GitHub Pages に載せる。検索にはまだ出さない</div>
+        </div>
+        <div class="card card--accent-red">
+          <div class="card-label">◇ まだ決めていないこと</div>
+          <div class="card-value">5つ</div>
+          <div class="card-detail">アプリ名・動物の最終決定など（〖14〗）</div>
+        </div>
+      </div>
+
+      <div class="callout callout-info">
+        <div class="callout-title">《 この文書の印 》</div>
+        <p><span class="badge badge-confirmed">〔ゆ〕 決定</span> … 作者が決めたこと</p>
+        <p><span class="badge badge-assumption">〔C〕 判断</span> … Claude が判断したこと（見直して OK）</p>
+      </div>
+    </section>
+
+    <!-- 1 -->
+    <section id="check">
+      <h2>〖1〗 確認してほしいこと（Claude が判断したこと）</h2>
+      <p>次の項目は、話し合いの中では決めていません。<strong>このままでよいか</strong>を見てください。</p>
+      <table class="spec-table">
+        <thead><tr><th>項目</th><th>Claude の判断</th><th>理由</th></tr></thead>
+        <tbody>
+          <tr><td>答え方</td><td><strong>5段階</strong></td><td>今のサンプルデータと同じ。逆向きの質問で、なんとなくの回答をおさえる</td></tr>
+          <tr><td>逆向きの質問</td><td>各軸8問のうち<strong>4問</strong></td><td>「そう思う」ばかり選ぶクセを打ち消す</td></tr>
+          <tr><td>質問の順番</td><td>毎回<strong>同じ順番</strong>（軸をまぜて出す）</td><td>途中から再開しても順番が変わらない。テストしやすい</td></tr>
+          <tr><td>保存する人数</td><td>1つの端末に<strong>1人分</strong>（最新の1回）</td><td>しくみが簡単。家族や同僚と端末を共有する場面は少ない</td></tr>
+          <tr><td>「結果を消す」ボタン</td><td>つける</td><td>プライバシーのため</td></tr>
+          <tr><td>画面のことば</td><td>「短所」と書かず<strong>「のびしろ」「気をつけたい」</strong></td><td>前向きに読めるように</td></tr>
+          <tr><td>文章の単位</td><td>入口は動物ごと、長所と成長ステップは軸の側ごと、リーダー・部下は動物ごと</td><td>当たっている感じと、書く量のバランス</td></tr>
+          <tr><td>成長ステップでバランス型の軸を選んだとき</td><td>寄っている側のステップを出す</td><td>バランス型でも、少しはどちらかに寄っているため</td></tr>
+          <tr><td>グループの色</td><td>けん引＝コーラル、まとめ役＝ひまわりイエロー、職人＝ミント、寄りそい＝ラベンダー</td><td>グループのイメージに合わせた</td></tr>
+          <tr><td>制服の色</td><td><strong>グループの色</strong>に合わせる</td><td>キャラを見ただけでグループがわかる</td></tr>
+          <tr><td>本文の教科書体</td><td>端末の「UD デジタル 教科書体」→ なければ同梱の<strong>Klee One</strong></td><td>UD デジタル 教科書体はウェブで配る許可がない。Klee One は無料で同梱できる教科書体風の書体</td></tr>
+          <tr><td>見出し・ボタン・数字</td><td>同梱の<strong>BIZ UDPゴシック</strong></td><td>太字がはっきりして、数字や％が読みやすい</td></tr>
+          <tr><td>読みやすさルールの色</td><td>和紙調の配色<strong>だけ</strong>使わない（ほかは守る）</td><td>「ポップに」という希望のため</td></tr>
+          <tr><td>文章の下書き</td><td>Claude が下書き → 作者が直す</td><td>全部で約54項目＋質問40問</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 2 -->
+    <section id="why">
+      <h2>〖2〗 なぜ作るのか</h2>
+      <p>介護現場のリーダーが、リーダーシップをもっと発揮したいと考えたとき。<br><strong>まず自分のリーダータイプを見きわめ、長所を生かして短所を補う</strong>方針を立てられるようにします。 <span class="badge badge-confirmed">〔ゆ〕</span></p>
+
+      <h3>◇ 誰が使い、どう広がるか <span class="badge badge-confirmed">〔ゆ〕</span></h3>
+      <ol>
+        <li><strong>作った本人</strong>（一番の利用者）</li>
+        <li><strong>職場のスタッフ</strong> … 「おもしろいから答えてみて」と誘う範囲。評価とは切り離す</li>
+        <li><strong>インターネットで一般公開</strong> … おもしろければ、介護職の人なら誰でも使えるように</li>
+      </ol>
+
+      <h3>◇ 成功の基準 <span class="badge badge-confirmed">〔ゆ〕</span></h3>
+      <ul>
+        <li>〇 <strong>当たっている</strong>と感じる</li>
+        <li>〇 読んだあとに<strong>前向きになり、やる気が上がる</strong></li>
+      </ul>
+
+      <div class="callout callout-danger">
+        <div class="callout-title">× これをしたら失敗（動いていても）</div>
+        <ul>
+          <li>読んだ人が<strong>落ち込む</strong>、「決めつけられた」と感じる</li>
+          <li><strong>人事評価</strong>の道具として使える形になる</li>
+          <li>回答や結果が<strong>外部に送られる</strong></li>
+          <li>文字が小さい・つまっている・色だけで区別しているなど、<strong>読みにくい</strong></li>
+        </ul>
+      </div>
+
+      <h3>◇ v1 に入れるもの・入れないもの <span class="badge badge-confirmed">〔ゆ〕</span></h3>
+      <table class="spec-table">
+        <thead><tr><th>〇 v1 に入れる</th><th>△ あとの版</th></tr></thead>
+        <tbody>
+          <tr><td>性格の質問 40問</td><td>介護スキル・ビジネススキルと肩書き</td></tr>
+          <tr><td>結果：入口・5つのかたむき・長所とのびしろ</td><td>相性</td></tr>
+          <tr><td>結果：リーダーとして・部下として</td><td>チーム機能</td></tr>
+          <tr><td>結果：成長ステップ（半年分）</td><td>画像で保存・共有、ふりがな</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 3 -->
+    <section id="concepts">
+      <h2>〖3〗 ことばの説明</h2>
+      <div class="glossary">
+        <div class="glossary-item"><div class="glossary-term">軸（じく）</div><div class="glossary-def">性格を見る5本のものさし。A 関わり方／B 見るところ／C 進め方／D 変化への姿勢／E 気持ちの安定。</div></div>
+        <div class="glossary-item"><div class="glossary-term">動物（16種）</div><div class="glossary-def">A〜D の4本の軸の組み合わせで決まるキャラ。例：ライオン（LTFK）。</div></div>
+        <div class="glossary-item"><div class="glossary-term">グループ（4つ）</div><div class="glossary-def">A × B で分けたまとまり。けん引・まとめ役・職人・寄りそい。</div></div>
+        <div class="glossary-item"><div class="glossary-term">型（2つ）</div><div class="glossary-def">E 軸で決まる。どっしり型／こまやか型。</div></div>
+        <div class="glossary-item"><div class="glossary-term">右側寄り度</div><div class="glossary-def">各軸の点数（0〜100）。50 以上なら右側。</div></div>
+        <div class="glossary-item"><div class="glossary-term">バランス型</div><div class="glossary-def">右側寄り度が 40〜60 の軸。「どちらもできる」と表示する。</div></div>
+        <div class="glossary-item"><div class="glossary-term">のびしろ</div><div class="glossary-def">画面で「短所」のかわりに使うことば。</div></div>
+        <div class="glossary-item"><div class="glossary-term">静的サイト</div><div class="glossary-def">サーバーでプログラムを動かさない Web サイト。〖10〗でくわしく。</div></div>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section id="model">
+      <h2>〖4〗 診断のしくみ</h2>
+      <figure class="diagram-container">
+        <svg viewBox="0 0 760 330" role="img" aria-labelledby="fig1t" style="max-width:100%;height:auto">
+          <title id="fig1t">40問の答えから、5本の軸の点数を出し、動物・グループ・型を決める流れ</title>
+          <g font-family="inherit" font-size="15" fill="var(--color-text)">
+            <rect x="10" y="130" width="120" height="70" rx="12" fill="var(--color-surface)" stroke="var(--color-border-strong)" stroke-width="2"/>
+            <text x="70" y="160" text-anchor="middle" font-weight="700">40問の答え</text>
+            <text x="70" y="182" text-anchor="middle" font-size="13">5段階</text>
+
+            <rect x="180" y="40" width="170" height="250" rx="12" fill="var(--color-surface)" stroke="var(--color-border-strong)" stroke-width="2"/>
+            <text x="265" y="68" text-anchor="middle" font-weight="700">5本の軸の点数</text>
+            <text x="200" y="102">A 関わり方</text>
+            <text x="200" y="138">B 見るところ</text>
+            <text x="200" y="174">C 進め方</text>
+            <text x="200" y="210">D 変化への姿勢</text>
+            <text x="200" y="246">E 気持ちの安定</text>
+            <text x="265" y="278" text-anchor="middle" font-size="13">各 0〜100</text>
+
+            <rect x="420" y="20" width="160" height="70" rx="12" fill="var(--color-primary-light)" stroke="var(--color-primary)" stroke-width="2"/>
+            <text x="500" y="50" text-anchor="middle" font-weight="700">◆ グループ</text>
+            <text x="500" y="72" text-anchor="middle" font-size="13">A × B → 4つ</text>
+
+            <rect x="420" y="130" width="160" height="70" rx="12" fill="var(--color-success-light)" stroke="var(--color-success)" stroke-width="2"/>
+            <text x="500" y="160" text-anchor="middle" font-weight="700">● 動物</text>
+            <text x="500" y="182" text-anchor="middle" font-size="13">A〜D → 16種</text>
+
+            <rect x="420" y="240" width="160" height="70" rx="12" fill="var(--color-warning-light)" stroke="var(--color-warning)" stroke-width="2"/>
+            <text x="500" y="270" text-anchor="middle" font-weight="700">▲ 型</text>
+            <text x="500" y="292" text-anchor="middle" font-size="13">E → 2つ</text>
+
+            <rect x="630" y="110" width="120" height="110" rx="12" fill="var(--color-marker)" stroke="var(--color-strong)" stroke-width="2"/>
+            <text x="690" y="145" text-anchor="middle" font-weight="700">結果</text>
+            <text x="690" y="170" text-anchor="middle" font-size="13">ライオン・</text>
+            <text x="690" y="190" text-anchor="middle" font-size="13">どっしり型</text>
+
+            <g stroke="var(--color-text-secondary)" stroke-width="2" fill="none">
+              <path d="M130 165 H175"/><path d="M168 159 L176 165 L168 171"/>
+              <path d="M350 120 L415 60"/><path d="M350 165 H415"/><path d="M408 159 L416 165 L408 171"/>
+              <path d="M350 240 L415 272"/>
+              <path d="M580 55 L625 140"/><path d="M580 165 H625"/><path d="M618 159 L626 165 L618 171"/><path d="M580 275 L625 195"/>
+            </g>
+          </g>
+        </svg>
+        <figcaption>図1．答えから結果が決まるまで（グループの色は〖8〗）</figcaption>
+      </figure>
+
+      <h3>◇ 点数の計算 <span class="badge badge-assumption">〔C〕</span></h3>
+      <ol>
+        <li>答えを 1〜5 の数にする（「そう思わない」＝1 … 「そう思う」＝5）</li>
+        <li>右側に寄る質問はそのまま、左側に寄る質問は <code>6 − 答え</code> にする</li>
+        <li>軸ごとに平均して、<code>(平均 − 1) ÷ 4 × 100</code> で<strong>右側寄り度（0〜100）</strong>にする</li>
+        <li>50 未満なら左側、<strong>50 以上なら右側</strong>の文字を使う</li>
+        <li>画面には、寄っている側の％を出す（例：右側寄り度 28 → 「引っぱる 寄り（72％）」）</li>
+        <li>40〜60 なら「◎ バランス型（どちらもできる）」と表示する。動物と型の判定は 4. のまま</li>
+      </ol>
+      <div class="callout callout-info">
+        <div class="callout-title">《 参考 》</div>
+        <p>1軸8問・5段階なので、点数は 3.125 きざみになります。40 と 60 ちょうどの点は出ません。</p>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section id="flow">
+      <h2>〖5〗 画面の流れ</h2>
+      <figure class="diagram-container">
+        <svg viewBox="0 0 760 210" role="img" aria-labelledby="fig2t" style="max-width:100%;height:auto">
+          <title id="fig2t">トップ、質問、結果の3つの画面の流れ</title>
+          <g font-family="inherit" font-size="15" fill="var(--color-text)">
+            <rect x="10" y="40" width="200" height="130" rx="14" fill="var(--color-surface)" stroke="var(--color-border-strong)" stroke-width="2"/>
+            <text x="110" y="70" text-anchor="middle" font-weight="700">① トップ</text>
+            <text x="30" y="100" font-size="13">・説明と注意書き</text>
+            <text x="30" y="122" font-size="13">・はじめる／つづきから</text>
+            <text x="30" y="144" font-size="13">・前回の結果を見る</text>
+
+            <rect x="280" y="40" width="200" height="130" rx="14" fill="var(--color-surface)" stroke="var(--color-border-strong)" stroke-width="2"/>
+            <text x="380" y="70" text-anchor="middle" font-weight="700">② 質問</text>
+            <text x="300" y="100" font-size="13">・1画面に1問</text>
+            <text x="300" y="122" font-size="13">・進み具合（○／40）</text>
+            <text x="300" y="144" font-size="13">・戻る／答えるたび保存</text>
+
+            <rect x="550" y="40" width="200" height="130" rx="14" fill="var(--color-marker)" stroke="var(--color-strong)" stroke-width="2"/>
+            <text x="650" y="70" text-anchor="middle" font-weight="700">③ 結果</text>
+            <text x="570" y="100" font-size="13">・〖6〗の6つの部分</text>
+            <text x="570" y="122" font-size="13">・もう一度やる</text>
+            <text x="570" y="144" font-size="13">・結果を消す</text>
+
+            <g stroke="var(--color-text-secondary)" stroke-width="2" fill="none">
+              <path d="M210 105 H275"/><path d="M268 99 L276 105 L268 111"/>
+              <path d="M480 105 H545"/><path d="M538 99 L546 105 L538 111"/>
+            </g>
+          </g>
+        </svg>
+        <figcaption>図2．3つの画面（回答と結果は端末の中だけに保存）</figcaption>
+      </figure>
+    </section>
+
+    <!-- 6 -->
+    <section id="result">
+      <h2>〖6〗 結果ページ <span class="badge badge-confirmed">〔ゆ〕</span></h2>
+      <table class="spec-table">
+        <thead><tr><th>順</th><th>部分</th><th>中身</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td><strong>入口</strong></td><td>イラスト・グループ名・動物と型・キャッチコピー・ひとこと。<strong>強みだけ書く</strong></td></tr>
+          <tr><td>1</td><td><strong>5つのかたむき</strong></td><td>5本のバー。●の位置＋「〜寄り（○％）」の文字＋軸のアイコン</td></tr>
+          <tr><td>2</td><td><strong>長所と、のびしろ</strong></td><td>5本の軸それぞれのカード</td></tr>
+          <tr><td>3</td><td><strong>リーダーとして</strong></td><td>★強み／△クセ／◇ヒント</td></tr>
+          <tr><td>4</td><td><strong>部下として</strong></td><td>★強み／◇伝わる指示／♪やる気の出る声かけ</td></tr>
+          <tr><td>5</td><td><strong>成長ステップ</strong></td><td>本人が軸を1つ選ぶ → ①明日から ②1か月 ③3か月 ◎半年後の目標</td></tr>
+        </tbody>
+      </table>
+
+      <h3>◇ 文章を作る単位 <span class="badge badge-assumption">〔C〕</span></h3>
+      <table class="spec-table">
+        <thead><tr><th>部分</th><th>単位</th><th>数</th></tr></thead>
+        <tbody>
+          <tr><td>入口のひとこと</td><td>動物ごと＋型ごとの一文</td><td>16＋2</td></tr>
+          <tr><td>長所とのびしろ</td><td>軸の側ごと</td><td>10</td></tr>
+          <tr><td>リーダーとして・部下として</td><td>動物ごと</td><td>16</td></tr>
+          <tr><td>成長ステップ</td><td>軸の側ごと</td><td>10</td></tr>
+        </tbody>
+      </table>
+
+      <h3>◇ 成長ステップのお手本（引っぱる側）</h3>
+      <table class="spec-table">
+        <thead><tr><th>時期</th><th>内容</th></tr></thead>
+        <tbody>
+          <tr><td>① 明日から</td><td>決める前に一人だけ「どう思う？」と聞く</td></tr>
+          <tr><td>② 1か月</td><td>申し送りで、毎回一人に意見を聞く</td></tr>
+          <tr><td>③ 3か月</td><td>会議で、まだ話していない人に話をふる</td></tr>
+          <tr><td>◎ 半年後の目標</td><td>「決めるのが早くて、話も聞いてくれる人」と言われる</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 7 -->
+    <section id="writing">
+      <h2>〖7〗 文章の書き方 <span class="badge badge-confirmed">〔ゆ〕</span></h2>
+      <ul>
+        <li>〇 <strong>入口は強みだけ</strong></li>
+        <li>〇 カードの順番：<strong>△気をつけたい（短く）→ 〇やってみる → ★あなたの力（長く）→ 強みがのびた先</strong></li>
+        <li>〇 人は最後に読んだことが心に残る。だから<strong>強みで終える</strong></li>
+        <li>〇 のびしろは<strong>強みの裏返し</strong>として書く</li>
+        <li>〇 「〜かもしれません」で<strong>決めつけない</strong></li>
+        <li>〇 強みは<strong>介護の具体的な場面</strong>で書く</li>
+        <li>〇 補い方は「<strong>その強みがもっと活きる方法</strong>」として書く</li>
+      </ul>
+      <div class="callout callout-success">
+        <div class="callout-title">★ お手本（引っぱる側）</div>
+        <p><strong>△ 気をつけたい</strong><br>スピードがあるぶん、まわりの声を拾いきれないことがあるかもしれません。</p>
+        <p><strong>〇 やってみる</strong><br>決める前に一人だけ「どう思う？」と聞いてみてください。</p>
+        <p><strong>★ あなたの力</strong><br>それでも、あなたの一番の力は決断の早さです。<br>利用者さんが急に具合を悪くしたとき、まわりが迷っているあいだに「看護師さんを呼んで。ここは私が見ます」と動けるのがあなたです。<br>その力に、チームはきっと何度も助けられています。<br>まわりの声をひとつ足せば、その決める力はもっと信頼される力になります。</p>
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section id="design">
+      <h2>〖8〗 見た目</h2>
+      <p>方向性：<strong>ポップでありながら、ビジネスでも使える。女性にも人気が出そうな感じ。</strong> <span class="badge badge-confirmed">〔ゆ〕</span></p>
+
+      <h3>◇ イラスト：絵柄D「シンプルゆるかわ」 <span class="badge badge-confirmed">〔ゆ〕</span></h3>
+      <figure style="margin:1rem 0;text-align:center">
+        <img src="data:image/webp;base64,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" alt="介護職員のポロシャツと名札をつけた、2頭身のゆるかわなライオンのイラスト" style="width:220px;height:220px;border-radius:var(--radius);border:2px solid var(--color-border)">
+        <figcaption>図3．お手本（ライオン）。2頭身・点の目・太めの茶色の線・影なしのベタ塗り</figcaption>
+      </figure>
+      <ul>
+        <li>介護職員のポロシャツと無地の名札。<strong>制服の色はグループの色</strong> <span class="badge badge-assumption">〔C〕</span></li>
+        <li>性別・年齢を感じさせないデザイン</li>
+        <li>キラキラ・ハート・葉っぱなどの<strong>あしらい</strong>も同じ絵柄で作り、ページに散りばめる</li>
+      </ul>
+
+      <h3>◇ 色 <span class="badge badge-confirmed">〔ゆ〕</span></h3>
+      <ul>
+        <li>アプリ全体の土台：<strong>案A「コーラル × ミント」</strong></li>
+        <li>キャラの色は<strong>グループごとに4色</strong>。一人の結果に出るのは1色</li>
+        <li>5本の軸は色で分けず、<strong>アイコン</strong>で見分ける（例：関わり方＝🚩、見るところ＝👀）</li>
+      </ul>
+      <table class="spec-table">
+        <thead><tr><th>グループ</th><th>色の案 <span class="badge badge-assumption">〔C〕</span></th><th>見本</th></tr></thead>
+        <tbody>
+          <tr><td>けん引</td><td>コーラル</td><td><span class="swatch" style="background:var(--sw-coral)"></span> コーラル</td></tr>
+          <tr><td>まとめ役</td><td>ひまわりイエロー</td><td><span class="swatch" style="background:var(--sw-yellow)"></span> ひまわりイエロー</td></tr>
+          <tr><td>職人</td><td>ミント</td><td><span class="swatch" style="background:var(--sw-mint)"></span> ミント</td></tr>
+          <tr><td>寄りそい</td><td>ラベンダー</td><td><span class="swatch" style="background:var(--sw-lavender)"></span> ラベンダー</td></tr>
+        </tbody>
+      </table>
+      <p>4色とも、ライト・ダークの両方で<strong>文字と背景のコントラスト 4.5:1 以上</strong>を測って決めます。</p>
+
+      <h3>◇ 読みやすさ（LD・ディスレクシア対応） <span class="badge badge-confirmed">〔ゆ〕</span></h3>
+      <ul>
+        <li>〇 <strong>文字は大きめ</strong>：本文 18px（スマホ）／19px（タブレット）／20px（パソコン）。15px 未満は使わない</li>
+        <li>〇 行間 1.85、文字の間 0.04em、左そろえ、斜体なし、1行は約34文字まで</li>
+        <li>〇 <strong>色だけで区別しない</strong>（記号・枠・太字・バッジをいっしょに使う）</li>
+        <li>〇 真っ白・真っ黒を使わない。押すところは 44px 以上</li>
+        <li>〇 ダークモードと「動きを減らす」設定に対応</li>
+        <li>〇 <strong>本文は教科書体</strong>（ディスレクシア対応） <span class="badge badge-confirmed">〔ゆ〕</span>。見出し・ボタン・数字は BIZ UDPゴシック <span class="badge badge-assumption">〔C〕</span></li>
+      </ul>
+
+      <h3>◇ 書体の選び方 <span class="badge badge-assumption">〔C〕</span></h3>
+      <table class="spec-table">
+        <thead><tr><th>書体</th><th>あつかい</th><th>理由</th></tr></thead>
+        <tbody>
+          <tr><td><strong>UD デジタル 教科書体</strong>（モリサワ）</td><td>△ 端末に入っていれば使う（同梱しない）</td><td>ディスレクシア向けに研究して作られた書体。ただし Windows に入っているものは、ウェブに載せて配る許可がない。正式なウェブ用サービス（TypeSquare）は有料で、外部への通信が発生する</td></tr>
+          <tr><td><strong>Klee One</strong>（フォントワークス）</td><td>〇 同梱する（本文用）</td><td>教科書体に近い、ペンで書いたような形。無料で配ってよいライセンス（SIL OFL 1.1）。iPhone・Android でも教科書体らしく読める。※ディスレクシア向けに研究して作られた書体ではない</td></tr>
+          <tr><td><strong>BIZ UDPゴシック</strong>（モリサワ）</td><td>〇 同梱する（見出し・ボタン用）</td><td>UD（ユニバーサルデザイン）書体で、無料で配ってよいライセンス（SIL OFL 1.1）</td></tr>
+        </tbody>
+      </table>
+      <ul>
+        <li>〇 どの書体も Google Fonts などから読み込まない（外部に通信しない）</li>
+        <li>〇 日本語の書体は大きい（数 MB）ので、<strong>アプリで使う文字だけを取り出して小さくする</strong></li>
+      </ul>
+
+      <h3>◇ 画面の大きさ <span class="badge badge-confirmed">〔ゆ〕</span></h3>
+      <table class="spec-table">
+        <thead><tr><th>端末</th><th>幅</th><th>並べ方</th></tr></thead>
+        <tbody>
+          <tr><td>📱 スマホ</td><td>〜599px</td><td>1列。上から順に読む（いちばん大事）</td></tr>
+          <tr><td>📋 タブレット</td><td>600〜999px</td><td>入口を横並び。「リーダー」「部下」を2列</td></tr>
+          <tr><td>💻 パソコン</td><td>1000px〜</td><td>2列。左にキャラと5つのかたむき（固定）、右に説明</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 9 -->
+    <section id="illust">
+      <h2>〖9〗 イラストの作り方</h2>
+      <ol>
+        <li>動物16種の一覧を、作者に確認してもらう</li>
+        <li>共通の指示文を1つ作り、<strong>動物名と制服の色だけ</strong>入れかえて Codex で作る。お手本画像を毎回わたし、タッチをそろえる</li>
+        <li>できた画像の<strong>背景を透明にする</strong>（Codex の画像は背景が透明にならないため）</li>
+        <li>ウェブ用に小さくする（例：512×512）</li>
+        <li>あしらい（6〜10個）も同じ手順で作る</li>
+        <li>一覧で見てもらい、タッチがずれたものだけ作り直す</li>
+      </ol>
+    </section>
+
+    <!-- 10 -->
+    <section id="tools">
+      <h2>〖10〗 なぜこの作り方か（第三者への説明用）</h2>
+      <p>「なぜこの道具で、この方法で作っているのか」を、<strong>中学生にもわかる言葉</strong>でまとめます。<br>人に説明するときは、この章をそのまま使えます。</p>
+
+      <h3>① なぜ「静的サイト」なのか</h3>
+      <div class="callout callout-info">
+        <div class="callout-title">◇ たとえ：パンフレットを置くか、受付の人を置くか</div>
+        <p>静的サイトは、<strong>印刷したパンフレットを置いておく</strong>ようなものです。<br>サーバーで動くプログラムは、<strong>受付の人がその場で答えを書いて渡す</strong>ようなものです。<br>受付の人がいると、そこが狙われます。パンフレットなら、狙われる場所がほとんどありません。</p>
+      </div>
+      <table class="spec-table">
+        <thead><tr><th>作り方</th><th>〇 良いところ</th><th>△ 困るところ</th></tr></thead>
+        <tbody>
+          <tr><td><strong>静的サイト（今回）</strong></td><td>無料・速い・<strong>攻撃される場所がほぼない</strong>・回答を外に送らないと言い切れる</td><td>みんなのデータを集めることはできない</td></tr>
+          <tr><td>PHP・WordPress などのサーバー</td><td>データを集めたり、ログインを作ったりできる</td><td><strong>受付（サーバー）が狙われる</strong>。修正が出るたびに更新が必要。お金がかかる</td></tr>
+          <tr><td>スマホアプリ</td><td>スマホの機能をフルに使える</td><td>ストアの審査がある。iPhone 用と Android 用の2つが必要</td></tr>
+          <tr><td>診断メーカー・Google フォーム</td><td>すぐ作れる</td><td>見た目や判定のしくみを自由に作れない</td></tr>
+        </tbody>
+      </table>
+      <p>診断の計算は<strong>スマホの中だけでできる</strong>ので、受付の人（サーバー）はいりません。<br>回答がどこにも送られないので、「人事評価には使わない」という約束にも一番安心です。</p>
+
+      <h3>② なぜ GitHub Pages で公開するのか</h3>
+      <ul>
+        <li>〇 静的サイトを<strong>無料</strong>で公開できる。暗号化（https）も最初からついている</li>
+        <li>〇 設計図（コード）の保管場所と公開場所が同じ。直したら、そのまま公開できる</li>
+        <li>△ 比べた相手：レンタルサーバー（お金がかかり、サーバーの更新も自分の仕事になる）、Vercel など（同じくらい便利だが、GitHub だけで済むほうがシンプル）</li>
+      </ul>
+
+      <h3>③ なぜ Vite ＋ TypeScript なのか（React は使わない）</h3>
+      <table class="spec-table">
+        <thead><tr><th>道具</th><th>たとえ</th><th>選んだ理由</th></tr></thead>
+        <tbody>
+          <tr><td><strong>TypeScript</strong></td><td>書いている途中で<strong>赤ペンを入れてくれる先生</strong></td><td>「数字のところに文字を入れた」などの間違いを、動かす前に教えてくれる。AI が書いたコードの間違いも見つけやすい</td></tr>
+          <tr><td><strong>Vite</strong></td><td><strong>組み立て工場</strong></td><td>書いたコードを、スマホで速く動く形にまとめる。今いちばん広く使われている道具のひとつ</td></tr>
+          <tr><td>React（使わない）</td><td>大きな工場の機械</td><td>画面がたくさんある大きなアプリ向け。このアプリは画面が3つほどなので大きすぎる。<strong>部品が少ないほど、守る場所も少ない</strong></td></tr>
+        </tbody>
+      </table>
+
+      <h3>④ なぜ質問や文章を JSON に分けるのか</h3>
+      <div class="callout callout-info">
+        <div class="callout-title">◇ たとえ：台本と役者を分ける</div>
+        <p>質問や説明文（<strong>台本</strong>）を、プログラム（<strong>役者</strong>）から切り離します。<br>文章を直したいときは台本だけを直せばよく、プログラムを壊す心配がありません。</p>
+      </div>
+
+      <h3>⑤ なぜテスト（Vitest）を書くのか</h3>
+      <p>「この答え方なら、ライオン・どっしり型になるはず」を、<strong>自動で確かめるしかけ</strong>です。<br>質問を増やしたり計算を直したりしても、判定が狂っていないことをいつでも確かめられます。</p>
+
+      <h3>⑥ なぜ pnpm なのか</h3>
+      <p>部品（パッケージ）をそろえる係です。npm より速く、パソコンの容量を食いにくい。<br><strong>新しすぎる部品はすぐに使わない</strong>などの安全の設定が強めで、〖11〗の攻撃に強くなります。</p>
+    </section>
+
+    <!-- 11 -->
+    <section id="security">
+      <h2>〖11〗 セキュリティとプライバシー</h2>
+      <p>希望：<strong>脆弱性はしっかりつぶす。</strong> <span class="badge badge-confirmed">〔ゆ〕</span></p>
+      <div class="callout callout-warning">
+        <div class="callout-title">△ PHP の修正（2026年10月）について</div>
+        <p>このアプリは <strong>PHP を一切使いません</strong>。サーバーでプログラムを動かさない静的サイトなので、PHP の脆弱性の影響を受けません。</p>
+      </div>
+      <table class="spec-table">
+        <thead><tr><th>対策</th><th>内容</th></tr></thead>
+        <tbody>
+          <tr><td>外部に送らない</td><td>回答と結果は端末の中（<code>localStorage</code>）だけ。アクセス解析・広告・外部フォント・外部スクリプトを入れない</td></tr>
+          <tr><td>Vite の版</td><td><strong>8.0.16 以上</strong>。CVE-2026-53571（Windows で <code>.env</code> などが見えてしまう問題）などの修正版</td></tr>
+          <tr><td>開発用サーバー</td><td>自分のパソコンの中だけで動かす。ネットワークに出さない</td></tr>
+          <tr><td>pnpm の設定</td><td>公開から24時間たっていない部品は入れない。部品が勝手にプログラムを実行するのを止める。<strong>公式の説明で確かめてから設定する</strong></td></tr>
+          <tr><td>部品の固定</td><td><code>pnpm-lock.yaml</code> で版を固定する</td></tr>
+          <tr><td>見張り</td><td>GitHub の Dependabot と <code>pnpm audit</code> で、部品の脆弱性を自動で知らせる</td></tr>
+          <tr><td>画面への書き出し</td><td>文章を <code>innerHTML</code> に流しこまない</td></tr>
+          <tr><td>読み込みの制限（CSP）</td><td>自分のサイト以外からの読み込みを禁止する</td></tr>
+          <tr><td>秘密のファイル</td><td><code>.gitignore</code> に <code>.env*</code>・<code>*.pem</code>・<code>*.key</code> などを入れる</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 12 -->
+    <section id="publish">
+      <h2>〖12〗 公開のしかた <span class="badge badge-confirmed">〔ゆ〕</span></h2>
+      <ul>
+        <li>〇 v1 のゴール：<strong>GitHub Pages に載せ、スマホで使えるところまで</strong>。職場の人にもこの URL で配る</li>
+        <li>〇 リポジトリは<strong>公開</strong>（無料プランで GitHub Pages を使うため）</li>
+        <li>〇 そのため、リポジトリに入れる文書には<strong>個人の事情を書かない</strong></li>
+        <li>〇 一般公開までは、<strong>検索エンジンに載らない</strong>設定にする</li>
+        <li>〇 GitHub 上でリポジトリを作る・公開する操作は、作者の確認をとってから行う</li>
+      </ul>
+    </section>
+
+    <!-- 13 -->
+    <section id="later">
+      <h2>〖13〗 あとの版と、作業の進め方</h2>
+      <h3>◇ あとの版（順番の案） <span class="badge badge-assumption">〔C〕</span></h3>
+      <ol>
+        <li>介護スキル・ビジネススキルと肩書き</li>
+        <li>ふりがな（外国人スタッフへの配慮）</li>
+        <li>相性</li>
+        <li>結果を画像で保存・共有</li>
+        <li>チーム機能（ログインが必要になるので、作り方を考え直す）</li>
+      </ol>
+      <p>スタッフに配る前に、1. と 2. を入れる案です。</p>
+
+      <h3>◇ 作業の進め方</h3>
+      <ul>
+        <li>Git で管理する（最初に <code>git init</code>）</li>
+        <li>1つの作業ごとにコミットし、何をしたかを日本語で説明する</li>
+        <li><code>AGENTS.md</code>（Codex 用）と <code>CLAUDE.md</code>（Claude Code 用）に、同じ作業ルールを書く</li>
+      </ul>
+    </section>
+
+    <!-- 14 -->
+    <section id="open">
+      <h2>〖14〗 まだ決めていないこと</h2>
+      <ul class="question-list">
+        <li>アプリの名前（公開の前まで。それまでは「介護どうぶつ診断（仮）」）</li>
+        <li>動物16種の最終決定（イラストを作る前）</li>
+        <li>グループの4色の正確な値（作るときにコントラストを測って決める）</li>
+        <li>GitHub のリポジトリ名（Pages に載せる前）</li>
+        <li>かんたん版・くわしく版を分けるか（v1 を試したあと）</li>
+      </ul>
+    </section>
+
+    <!-- appendix -->
+    <section id="appendix">
+      <h2>〖付録〗 元の文書との対応</h2>
+      <p>この HTML は <code>docs/02_requirements.md</code> から作りました。内容が食いちがうときは Markdown が正です。</p>
+      <table class="spec-table">
+        <thead><tr><th>この HTML</th><th>元の文書の章</th><th>あつかい</th></tr></thead>
+        <tbody>
+          <tr><td>〖0〗 ひとことで言うと</td><td>全体</td><td><span class="badge badge-inferred">要約</span></td></tr>
+          <tr><td>〖1〗 確認してほしいこと</td><td>各章の〔C〕</td><td><span class="badge badge-inferred">集約</span></td></tr>
+          <tr><td>〖2〗 なぜ作るのか</td><td>§1〜§4</td><td><span class="badge badge-confirmed">そのまま</span></td></tr>
+          <tr><td>〖4〗 診断のしくみ</td><td>§5</td><td><span class="badge badge-confirmed">そのまま＋図</span></td></tr>
+          <tr><td>〖5〗 画面の流れ</td><td>§6</td><td><span class="badge badge-confirmed">そのまま＋図</span></td></tr>
+          <tr><td>〖6〗〖7〗 結果ページ・文章</td><td>§7</td><td><span class="badge badge-confirmed">そのまま</span></td></tr>
+          <tr><td>〖8〗 見た目</td><td>§8（土台の色の値の表は省略）</td><td><span class="badge badge-inferred">一部要約</span></td></tr>
+          <tr><td>〖9〗 イラスト</td><td>§9</td><td><span class="badge badge-inferred">一部要約</span></td></tr>
+          <tr><td>〖10〗 なぜこの作り方か</td><td>§11-1・§11-4</td><td><span class="badge badge-inferred">くわしく説明</span></td></tr>
+          <tr><td>〖11〗 セキュリティ</td><td>§12</td><td><span class="badge badge-confirmed">そのまま</span></td></tr>
+          <tr><td>〖12〗 公開のしかた</td><td>§11-3</td><td><span class="badge badge-confirmed">そのまま</span></td></tr>
+          <tr><td>〖13〗〖14〗</td><td>§13〜§16</td><td><span class="badge badge-inferred">一部要約</span></td></tr>
+        </tbody>
+      </table>
+      <p>フォルダ構成（§11-2）と、作る人にまかせること（§16）は、作る人向けなので Markdown だけに書いています。</p>
+    </section>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  <p>元の文書：<strong>docs/02_requirements.md</strong>（2026-10-23）</p>
+  <p>読みやすさのために並べ替え・要約しています。正式な内容は元の文書を見てください。外部の読み込みはありません（1つのファイルで開けます）。</p>
+</footer>
+
+<!-- Lightbox modal for diagrams (Pan & Zoom) -->
+<div class="diagram-modal" id="diagramModal" role="dialog" aria-modal="true" aria-label="拡大した図">
+  <div class="diagram-modal-toolbar">
+    <div class="diagram-modal-toolbar-group">
+      <button class="diagram-modal-btn" id="zoomOut" aria-label="Zoom out">&minus;</button>
+      <span class="diagram-modal-zoom-label" id="zoomLabel">100%</span>
+      <button class="diagram-modal-btn" id="zoomIn" aria-label="Zoom in">+</button>
+      <button class="diagram-modal-btn" id="zoomReset" aria-label="Reset zoom" style="font-size:0.6875rem;width:auto;padding:0 0.5rem;">元に戻す</button>
+    </div>
+    <span class="diagram-modal-caption-bar" id="modalCaption"></span>
+    <button class="diagram-modal-btn" id="modalClose" aria-label="Close">&times;</button>
+  </div>
+  <div class="diagram-modal-viewport" id="modalViewport">
+    <div class="diagram-modal-content" id="modalContent"></div>
+  </div>
+</div>
+
+<!-- ============================
+     SCRIPTS
+     Mermaid CDN for diagram rendering.
+     Remove if using inline SVG only.
+     ============================ -->
+<script>
+
+  // Diagram Pan & Zoom viewer
+  (function() {
+    var modal = document.getElementById('diagramModal');
+    var viewport = document.getElementById('modalViewport');
+    var content = document.getElementById('modalContent');
+    var caption = document.getElementById('modalCaption');
+    var zoomLabel = document.getElementById('zoomLabel');
+    var btnClose = document.getElementById('modalClose');
+    var btnIn = document.getElementById('zoomIn');
+    var btnOut = document.getElementById('zoomOut');
+    var btnReset = document.getElementById('zoomReset');
+
+    var scale = 1, panX = 0, panY = 0, fitScale = 1;
+    var dragging = false, startX = 0, startY = 0, startPanX = 0, startPanY = 0;
+    var MIN_SCALE = 0.1, MAX_SCALE = 5, STEP = 0.25;
+
+    function applyTransform() {
+      content.style.transform = 'translate(' + panX + 'px,' + panY + 'px) scale(' + scale + ')';
+      zoomLabel.textContent = Math.round(scale * 100) + '%';
+    }
+
+    function fitToView() {
+      scale = 1; panX = 0; panY = 0;
+      content.style.transform = 'none';
+      requestAnimationFrame(function() {
+        var svg = content.querySelector('svg');
+        if (!svg) { applyTransform(); return; }
+
+        var vw = viewport.clientWidth;
+        var vh = viewport.clientHeight;
+        var rect = svg.getBoundingClientRect();
+        var svgW = rect.width;
+        var svgH = rect.height;
+
+        if (!svgW || !svgH) { applyTransform(); return; }
+
+        var PAD = 48;
+        fitScale = Math.min((vw - PAD * 2) / svgW, (vh - PAD * 2) / svgH);
+        fitScale = Math.min(fitScale, 2);
+        fitScale = Math.max(fitScale, MIN_SCALE);
+        scale = fitScale;
+
+        panX = (vw - svgW * scale) / 2;
+        panY = (vh - svgH * scale) / 2;
+        applyTransform();
+      });
+    }
+
+    function zoomBy(delta, cx, cy) {
+      var prev = scale;
+      scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale + delta));
+      if (cx !== undefined && cy !== undefined) {
+        var ratio = scale / prev;
+        panX = cx - ratio * (cx - panX);
+        panY = cy - ratio * (cy - panY);
+      }
+      applyTransform();
+    }
+
+    function openModal(figure) {
+      var svg = figure.querySelector('svg');
+      var mermaidDiv = figure.querySelector('.mermaid');
+      var figcap = figure.querySelector('figcaption');
+
+      content.innerHTML = '';
+      if (svg) {
+        var clone = svg.cloneNode(true);
+        clone.removeAttribute('style');
+        content.appendChild(clone);
+      } else if (mermaidDiv) {
+        content.innerHTML = mermaidDiv.innerHTML;
+      }
+
+      caption.textContent = figcap ? figcap.textContent : '';
+      modal.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+      fitToView();
+    }
+
+    function closeModal() {
+      modal.classList.remove('is-open');
+      document.body.style.overflow = '';
+    }
+
+    // Open from diagram click
+    document.querySelectorAll('.diagram-container').forEach(function(fig) {
+      fig.addEventListener('click', function(e) {
+        if (e.target.closest('a')) return;
+        openModal(fig);
+      });
+    });
+
+    // Toolbar buttons
+    btnClose.addEventListener('click', closeModal);
+    btnIn.addEventListener('click', function() { zoomBy(STEP); });
+    btnOut.addEventListener('click', function() { zoomBy(-STEP); });
+    btnReset.addEventListener('click', fitToView);
+
+    // Mouse wheel zoom (centered on cursor)
+    viewport.addEventListener('wheel', function(e) {
+      e.preventDefault();
+      var rect = viewport.getBoundingClientRect();
+      var cx = e.clientX - rect.left;
+      var cy = e.clientY - rect.top;
+      var delta = e.deltaY < 0 ? STEP : -STEP;
+      zoomBy(delta, cx, cy);
+    }, { passive: false });
+
+    // Mouse drag to pan
+    viewport.addEventListener('mousedown', function(e) {
+      if (e.button !== 0) return;
+      dragging = true;
+      startX = e.clientX; startY = e.clientY;
+      startPanX = panX; startPanY = panY;
+    });
+    window.addEventListener('mousemove', function(e) {
+      if (!dragging) return;
+      panX = startPanX + (e.clientX - startX);
+      panY = startPanY + (e.clientY - startY);
+      applyTransform();
+    });
+    window.addEventListener('mouseup', function() { dragging = false; });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      if (!modal.classList.contains('is-open')) return;
+      if (e.key === 'Escape') closeModal();
+      else if (e.key === '+' || e.key === '=') zoomBy(STEP);
+      else if (e.key === '-') zoomBy(-STEP);
+      else if (e.key === '0') fitToView();
+    });
+  })();
+
+  // TOC: highlight active section on scroll
+  (function() {
+    var links = document.querySelectorAll('.toc a[href^="#"]');
+    var sections = Array.from(links).map(function(a) { return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+    if (!sections.length) return;
+    function onScroll() {
+      var current = sections[0];
+      for (var i = 0; i < sections.length; i++) {
+        if (sections[i].getBoundingClientRect().top <= 80) current = sections[i];
+      }
+      links.forEach(function(a) {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + current.id);
+      });
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+</body>
+</html>

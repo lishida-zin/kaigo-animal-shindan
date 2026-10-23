@@ -1,0 +1,21 @@
+# 依存・ビルド
+node_modules/
+dist/
+coverage/
+
+# 秘密情報（.env.example はコミットしてよい）
+.env*
+!.env.example
+*.pem
+*.key
+id_rsa
+id_ed25519
+credentials.csv
+*-service-account.json
+
+# ブレインストーミングのたたき台（ローカル専用）
+.superpowers/
+
+# OS
+.DS_Store
+Thumbs.db
