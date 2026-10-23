@@ -37,6 +37,7 @@ export interface GroupDef {
   /** A 軸と B 軸のコード（例 LT） */
   axes: string;
   summary: string;
+  colorName: 'coral' | 'yellow' | 'mint' | 'lavender';
 }
 
 export interface AnimalDef {
@@ -45,12 +46,16 @@ export interface AnimalDef {
   name: string;
   image: string;
   catch: string;
+  /** 入口のひとこと（強みだけ） */
+  oneLiner: string;
+  leader: { strength: string; habit: string; hint: string };
+  follower: { strength: string; instruction: string; encouragement: string };
 }
 
 export const axes = axesJson.axes as unknown as AxisDef[];
 export const balanceRange = axesJson.balanceRange as unknown as readonly [number, number];
-export const groups = animalsJson.groups as GroupDef[];
-export const animals = animalsJson.animals as AnimalDef[];
+export const groups = animalsJson.groups as unknown as GroupDef[];
+export const animals = animalsJson.animals as unknown as AnimalDef[];
 export const questions = questionsJson.questions as Question[];
 export const scaleLabels = questionsJson.scale.labels;
 export const questionSetVersion = questionsJson.version;

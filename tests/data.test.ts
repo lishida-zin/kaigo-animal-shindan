@@ -1,4 +1,4 @@
-import { axes } from '../src/data';
+import { axes, animals, groups, questions, questionSetVersion } from '../src/data';
 import { checkCopy } from './copy';
 
 const sides = axes.flatMap((axis) => (['left', 'right'] as const).map((side) => ({ axis, side, def: axis[side] })));
@@ -39,5 +39,67 @@ describe('checkCopy', () => {
     expect(checkCopy('短所があります。')).toHaveLength(1);
     expect(checkCopy('あ'.repeat(51) + '。')).toHaveLength(1);
     expect(checkCopy('「どう思う？」と聞いてみてください。')).toEqual([]);
+  });
+});
+
+describe('質問（questions.json）', () => {
+  test('40問・各軸8問・各軸で左向き4問と右向き4問', () => {
+    expect(questions).toHaveLength(40);
+    for (const id of ['A', 'B', 'C', 'D', 'E']) {
+      const own = questions.filter((q) => q.axis === id);
+      expect(own).toHaveLength(8);
+      expect(own.filter((q) => q.direction === 'left')).toHaveLength(4);
+      expect(own.filter((q) => q.direction === 'right')).toHaveLength(4);
+    }
+  });
+
+  test('id が重ならない', () => {
+    expect(new Set(questions.map((q) => q.id)).size).toBe(questions.length);
+  });
+
+  test('となり合う2問が同じ軸にならない', () => {
+    for (let i = 1; i < questions.length; i++) {
+      expect(questions[i].axis, `${questions[i - 1].id} と ${questions[i].id}`).not.toBe(questions[i - 1].axis);
+    }
+  });
+
+  test('質問の文が文章ルールを守っている', () => {
+    expect(questions.flatMap((q) => checkCopy(q.text))).toEqual([]);
+  });
+
+  test('質問の版は 1.0', () => {
+    expect(questionSetVersion).toBe('1.0');
+  });
+});
+
+describe('動物（animals.json）', () => {
+  test('16匹で、A〜D の組み合わせ16通りをすべて含む', () => {
+    expect(animals).toHaveLength(16);
+    const expected: string[] = [];
+    for (const a of 'LS') for (const b of 'TH') for (const c of 'PF') for (const d of 'KN') expected.push(a + b + c + d);
+    expect(animals.map((x) => x.code).sort()).toEqual(expected.sort());
+  });
+
+  test.each(animals.map((a) => [a.name, a] as const))('%s：文章の欄がそろい、ルールを守っている', (_, a) => {
+    const texts = [a.oneLiner, a.leader.strength, a.leader.habit, a.leader.hint,
+      a.follower.strength, a.follower.instruction, a.follower.encouragement];
+    for (const t of texts) expect(t?.trim()).toBeTruthy();
+    expect(texts.flatMap(checkCopy)).toEqual([]);
+  });
+
+  test.each(animals.map((a) => [a.name, a] as const))('%s：入口のひとことは2文までで、のびしろを含まない', (_, a) => {
+    expect(a.oneLiner.split(/(?<=[。！？])/).filter((s) => s.trim()).length).toBeLessThanOrEqual(2);
+    const weaknesses = axes.slice(0, 4).map((axis, i) => (axis.left.code === a.code[i] ? axis.left : axis.right).weakness);
+    for (const w of weaknesses) expect(a.oneLiner).not.toContain(w);
+  });
+
+  test('画像のファイル名は .webp', () => {
+    for (const a of animals) expect(a.image).toMatch(/^[a-z]+\.webp$/);
+  });
+
+  test('グループに色の名前がある', () => {
+    expect(Object.fromEntries(groups.map((g) => [g.id, g.colorName]))).toEqual({
+      drive: 'coral', unite: 'yellow', craft: 'mint', care: 'lavender',
+    });
   });
 });
