@@ -95,7 +95,8 @@
 /* パソコン */
 @media (min-width: 1000px) {
   .screen.result { max-width: 74rem; }
-  .result-grid { display: grid; grid-template-columns: 22rem 1fr; gap: 2.5rem; align-items: start; }
+  /* 文字を大きくしても右の列がはみ出さないよう、左の列は全体の 45% までにする */
+  .result-grid { display: grid; grid-template-columns: min(22rem, 45%) minmax(0, 1fr); gap: 2.5rem; align-items: start; }
   .col-a .r-hero { display: block; text-align: center; }
   .col-a .r-hero .r-illust { margin: 0 auto 0.6rem; width: 200px; height: 200px; }
   .col-a .r-hero::before { top: 10px; left: calc(50% - 144px); }
