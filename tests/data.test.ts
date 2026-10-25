@@ -83,6 +83,10 @@ describe('動物（animals.json）', () => {
     expect(animals.map((x) => x.code).sort()).toEqual(expected.sort());
   });
 
+  test.each(animals.map((a) => [a.name, a.leader.habit] as const))('%s：「△ クセ」は決めつけず「かもしれません。」で終わる', (_, habit) => {
+    expect(habit).toMatch(/かもしれません。$/);
+  });
+
   test.each(animals.map((a) => [a.name, a] as const))('%s：文章の欄がそろい、ルールを守っている', (_, a) => {
     const texts = [a.oneLiner, a.leader.strength, a.leader.habit, a.leader.hint,
       a.follower.strength, a.follower.instruction, a.follower.encouragement];
