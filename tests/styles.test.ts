@@ -59,3 +59,18 @@ test.each(all.map((x) => [x.f, x.css] as const))('%s：url() で読みこむフ�
   const urls = [...css.matchAll(/url\("(\.\.\/[^"]+)"\)/g)].map((m) => m[1] ?? '').filter((u) => !u.startsWith('../assets/fonts/'));
   for (const u of urls) expect(existsSync(join(dir, u)), u).toBe(true);
 });
+
+// 押せる箱の枠が見えること（WCAG 1.4.11：まわりとの差 3:1 以上）
+const base = readFileSync(join(dir, 'base.css'), 'utf-8');
+const buttonBorder = base.match(/(?:^|\n)button \{[^}]*border:[^;]*var\((--[\w-]+)\)/)?.[1] ?? '';
+test.each([['ライト', light], ['ダーク', dark]] as const)('%s：ボタンの枠と背景のコントラストが 3:1 以上', (_, t) => {
+  expect(buttonBorder).not.toBe('');
+  expect(contrast(t[buttonBorder] ?? '', t['--bg'] ?? '')).toBeGreaterThanOrEqual(3);
+});
+
+// 端末やブラウザで「文字を大きく」している人の設定が効くよう、基準の文字の大きさは % で決める
+test('html の文字の大きさは px ではなく % で決める', () => {
+  const sizes = [...base.matchAll(/html\s*\{[^}]*font-size:\s*([^;]+);/g)].map((m) => m[1]?.trim() ?? '');
+  expect(sizes.length).toBeGreaterThan(0);
+  for (const s of sizes) expect(s, s).toMatch(/%$/);
+});

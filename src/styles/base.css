@@ -1,9 +1,10 @@
 /* 文字と読みやすさの決まり（LD・ディスレクシア対応） */
 *, *::before, *::after { box-sizing: border-box; }
 
-html { font-size: 18px; -webkit-text-size-adjust: 100%; }
-@media (min-width: 600px) { html { font-size: 19px; } }
-@media (min-width: 1000px) { html { font-size: 20px; } }
+/* % で決めて、端末やブラウザで「文字を大きく」している人の設定を生かす（既定 16px のとき 18px／19px／20px） */
+html { font-size: 112.5%; -webkit-text-size-adjust: 100%; }
+@media (min-width: 600px) { html { font-size: 118.75%; } }
+@media (min-width: 1000px) { html { font-size: 125%; } }
 
 body {
   margin: 0;
@@ -36,7 +37,7 @@ button {
   min-width: 44px;
   padding: 0.5em 1.2em;
   border-radius: 999px;
-  border: 2px solid var(--line);
+  border: 2px solid var(--muted); /* 押せる箱だとわかるよう、背景との差を 3:1 以上に */
   background: var(--bg);
   color: var(--text);
   cursor: pointer;
