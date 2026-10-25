@@ -1,0 +1,19 @@
+/* 同梱書体（SIL Open Font License 1.1）。端末に入っていればそちらを使う */
+@font-face {
+  font-family: "Klee One";
+  font-weight: 400;
+  font-display: swap;
+  src: local("Klee One"), local("KleeOne-Regular"), url("../assets/fonts/KleeOne-Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "BIZ UDPGothic";
+  font-weight: 400;
+  font-display: swap;
+  src: local("BIZ UDPGothic"), local("BIZUDPGothic-Regular"), url("../assets/fonts/BIZUDPGothic-Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "BIZ UDPGothic";
+  font-weight: 700;
+  font-display: swap;
+  src: local("BIZ UDPGothic Bold"), local("BIZUDPGothic-Bold"), url("../assets/fonts/BIZUDPGothic-Bold.woff2") format("woff2");
+}

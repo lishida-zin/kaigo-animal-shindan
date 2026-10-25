@@ -1,0 +1,56 @@
+/* 文字と読みやすさの決まり（LD・ディスレクシア対応） */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* % で決めて、端末やブラウザで「文字を大きく」している人の設定を生かす（既定 16px のとき 18px／19px／20px） */
+html { font-size: 112.5%; -webkit-text-size-adjust: 100%; }
+@media (min-width: 600px) { html { font-size: 118.75%; } }
+@media (min-width: 1000px) { html { font-size: 125%; } }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.85;
+  letter-spacing: 0.04em;
+  font-feature-settings: "palt" 1;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+h1, h2, h3, h4, button, .ui {
+  font-family: var(--font-ui);
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+}
+h1 { font-size: 1.5rem; color: var(--head); margin: 0 0 0.5em; }
+h2 { font-size: 1.25rem; color: var(--head); margin: 2em 0 0.8em; padding-bottom: 0.3em; border-bottom: 3px solid var(--accent); }
+h3 { font-size: 1.25rem; color: var(--head); margin: 0 0 0.5em; }
+
+p { margin: 0 0 0.9em; max-width: 34em; }
+strong, b { font-family: var(--font-ui); font-weight: 700; }
+
+/* 押せるもの：44px 以上。色だけに頼らず、枠の太さと太字でも示す */
+button {
+  font-size: 1rem;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.5em 1.2em;
+  border-radius: 999px;
+  border: 2px solid var(--muted); /* 押せる箱だとわかるよう、背景との差を 3:1 以上に */
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+}
+button:focus-visible { outline: 3px solid var(--head); outline-offset: 3px; }
+button[aria-pressed="true"] { border: 3px solid var(--head); background: var(--mark); font-weight: 700; }
+.btn-primary { background: var(--head); color: var(--bg); border-color: var(--head); font-weight: 700; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

@@ -1,0 +1,256 @@
+{
+  "version": "1.0",
+  "note": "性格の質問40問（各軸8問、左向き4問・右向き4問）。軸がかたよらないよう A→B→C→D→E の順でまぜて出す。directionは「そう思う」と答えたときに寄る側（left/right）。",
+  "scale": {
+    "points": 5,
+    "labels": [
+      "そう思わない",
+      "あまりそう思わない",
+      "どちらともいえない",
+      "ややそう思う",
+      "そう思う"
+    ]
+  },
+  "questions": [
+    {
+      "id": "A01",
+      "axis": "A",
+      "direction": "left",
+      "text": "フロアで誰も動かないとき、自分から「こうしよう」と声をかける"
+    },
+    {
+      "id": "B01",
+      "axis": "B",
+      "direction": "left",
+      "text": "業務が時間どおりに終わったかどうかが、まず気になる"
+    },
+    {
+      "id": "C01",
+      "axis": "C",
+      "direction": "left",
+      "text": "出勤したら、まずその日の流れを頭の中で組み立てる"
+    },
+    {
+      "id": "D01",
+      "axis": "D",
+      "direction": "left",
+      "text": "今のやり方で問題がなければ、変えなくていいと思う"
+    },
+    {
+      "id": "E01",
+      "axis": "E",
+      "direction": "left",
+      "text": "利用者さんが急に転びそうになっても、落ち着いて動ける"
+    },
+    {
+      "id": "A02",
+      "axis": "A",
+      "direction": "right",
+      "text": "会議では、自分が話すより人の話を聞いている方が多い"
+    },
+    {
+      "id": "B02",
+      "axis": "B",
+      "direction": "right",
+      "text": "同僚が落ちこんでいると、仕事の手を止めてでも声をかけたくなる"
+    },
+    {
+      "id": "C02",
+      "axis": "C",
+      "direction": "right",
+      "text": "予定が急に変わっても、あまり気にならない"
+    },
+    {
+      "id": "D02",
+      "axis": "D",
+      "direction": "right",
+      "text": "他の施設のやり方を聞くと、うちでも試してみたくなる"
+    },
+    {
+      "id": "E02",
+      "axis": "E",
+      "direction": "right",
+      "text": "申し送りで聞いた小さなことが、勤務中ずっと気になる"
+    },
+    {
+      "id": "A03",
+      "axis": "A",
+      "direction": "left",
+      "text": "新しい行事の係を決めるとき、自分から手をあげることが多い"
+    },
+    {
+      "id": "B03",
+      "axis": "B",
+      "direction": "left",
+      "text": "やり方がちがっても、結果がよければそれでいいと思う"
+    },
+    {
+      "id": "C03",
+      "axis": "C",
+      "direction": "left",
+      "text": "入浴や受診の準備は、前の日までに済ませておきたい"
+    },
+    {
+      "id": "D03",
+      "axis": "D",
+      "direction": "left",
+      "text": "手順書どおりにケアをすることを大切にしている"
+    },
+    {
+      "id": "E03",
+      "axis": "E",
+      "direction": "left",
+      "text": "失敗しても、次の日にはあまり引きずらない"
+    },
+    {
+      "id": "A04",
+      "axis": "A",
+      "direction": "right",
+      "text": "目立つ役より、裏方の仕事をしている方が落ち着く"
+    },
+    {
+      "id": "B04",
+      "axis": "B",
+      "direction": "right",
+      "text": "利用者さんの「ありがとう」が、仕事で一番うれしい"
+    },
+    {
+      "id": "C04",
+      "axis": "C",
+      "direction": "right",
+      "text": "やることを決めすぎず、その場の様子を見て動く方だ"
+    },
+    {
+      "id": "D04",
+      "axis": "D",
+      "direction": "right",
+      "text": "「もっとよいやり方はないかな」と、よく考える"
+    },
+    {
+      "id": "E04",
+      "axis": "E",
+      "direction": "right",
+      "text": "利用者さんの表情がいつもとちがうと、すぐに気づく"
+    },
+    {
+      "id": "A05",
+      "axis": "A",
+      "direction": "left",
+      "text": "申し送りやミーティングで、進行役をまかされることが多い"
+    },
+    {
+      "id": "B05",
+      "axis": "B",
+      "direction": "left",
+      "text": "仕事が遅れている人がいると、つい手順の見直しを考える"
+    },
+    {
+      "id": "C05",
+      "axis": "C",
+      "direction": "left",
+      "text": "記録は、ケアが終わったらすぐに書く"
+    },
+    {
+      "id": "D05",
+      "axis": "D",
+      "direction": "left",
+      "text": "新しい介護用品は、みんなが使い始めてから使いたい"
+    },
+    {
+      "id": "E05",
+      "axis": "E",
+      "direction": "left",
+      "text": "夜勤や忙しい日でも、気持ちが乱れにくい"
+    },
+    {
+      "id": "A06",
+      "axis": "A",
+      "direction": "right",
+      "text": "自分の考えより、まわりの意見に合わせることが多い"
+    },
+    {
+      "id": "B06",
+      "axis": "B",
+      "direction": "right",
+      "text": "注意するとき、相手がどう感じるかを先に考えてしまう"
+    },
+    {
+      "id": "C06",
+      "axis": "C",
+      "direction": "right",
+      "text": "利用者さんの体調に合わせて、ケアの順番をよく入れかえる"
+    },
+    {
+      "id": "D06",
+      "axis": "D",
+      "direction": "right",
+      "text": "研修で聞いた新しい方法を、すぐに職場で話したくなる"
+    },
+    {
+      "id": "E06",
+      "axis": "E",
+      "direction": "right",
+      "text": "人に言われたひとことを、あとから何度も思い出す"
+    },
+    {
+      "id": "A07",
+      "axis": "A",
+      "direction": "left",
+      "text": "急なトラブルのとき、まわりに指示を出す役になりやすい"
+    },
+    {
+      "id": "B07",
+      "axis": "B",
+      "direction": "left",
+      "text": "一日の目標を決めて、それを達成できると気持ちがいい"
+    },
+    {
+      "id": "C07",
+      "axis": "C",
+      "direction": "left",
+      "text": "予定外のできごとが続くと、疲れを感じやすい"
+    },
+    {
+      "id": "D07",
+      "axis": "D",
+      "direction": "left",
+      "text": "決まったことは、多少不便でも守るべきだと思う"
+    },
+    {
+      "id": "E07",
+      "axis": "E",
+      "direction": "left",
+      "text": "ナースコールが続いても、あわてずに順番に対応できる"
+    },
+    {
+      "id": "A08",
+      "axis": "A",
+      "direction": "right",
+      "text": "大勢の前で話すより、一対一で話す方が得意だ"
+    },
+    {
+      "id": "B08",
+      "axis": "B",
+      "direction": "right",
+      "text": "職場の雰囲気がぎすぎすしていると、仕事に集中できない"
+    },
+    {
+      "id": "C08",
+      "axis": "C",
+      "direction": "right",
+      "text": "マニュアルにない場面でも、なんとかなると思える"
+    },
+    {
+      "id": "D08",
+      "axis": "D",
+      "direction": "right",
+      "text": "いつもと同じ仕事が続くと、少し退屈に感じる"
+    },
+    {
+      "id": "E08",
+      "axis": "E",
+      "direction": "right",
+      "text": "ご家族から苦情があると、その日はずっと心に残る"
+    }
+  ]
+}

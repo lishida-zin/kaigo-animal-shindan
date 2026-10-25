@@ -1,0 +1,17 @@
+# 部品と GitHub Actions の更新を毎週たしかめる
+# 公開されたばかりの版はすぐに使わない（pnpm の minimumReleaseAge 1日より長く待つ）
+version: 2
+updates:
+  - package-ecosystem: npm # pnpm もこの設定で扱われる
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 3
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 3

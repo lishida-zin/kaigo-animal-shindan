@@ -1,0 +1,54 @@
+{
+  "version": "0.2",
+  "note": "画面の文字（ボタン・注意書き・見出し）。{n} {total} {label} {percent} などはプログラムが置きかえる。",
+  "appName": "介護どうぶつ診断",
+  "lead": "40問に答えると、あなたのリーダータイプが動物のキャラでわかります。",
+  "notice": {
+    "title": "◇ この診断について",
+    "items": [
+      "正式な心理検査ではありません。自分を知るきっかけや、話し合いの材料として使ってください。",
+      "人事評価には使いません。",
+      "回答と結果は、この端末の中だけに保存されます。どこにも送られません。"
+    ]
+  },
+  "buttons": {
+    "start": "はじめる",
+    "resume": "つづきから",
+    "restart": "はじめから",
+    "showResult": "前回の結果を見る",
+    "retry": "もう一度やる",
+    "back": "◀ 戻る",
+    "clear": "結果を消す"
+  },
+  "quiz": {
+    "progress": "{n}／{total}",
+    "progressLabel": "進み具合"
+  },
+  "confirmClear": "保存した回答と結果を、この端末からすべて消します。よろしいですか？",
+  "result": {
+    "axesTitle": "〖1〗 あなたの5つのかたむき",
+    "cardsTitle": "〖2〗 長所と、のびしろ",
+    "leaderTitle": "〖3〗 リーダーとして",
+    "followerTitle": "〖4〗 部下として",
+    "growthTitle": "〖5〗 半年でのばす、成長ステップ",
+    "growthLead": "のばしたいところを1つ選んでください。",
+    "lean": "▶ {label} 寄り（{percent}％）",
+    "balanced": "◎ バランス型（どちらもできる）",
+    "cardTitle": "{axis}：{side}",
+    "weakness": "△ 気をつけたい",
+    "tip": "〇 やってみる",
+    "strength": "★ あなたの力",
+    "leaderStrength": "★ 強み",
+    "habit": "△ クセ",
+    "hint": "◇ ヒント",
+    "followerStrength": "★ 強み",
+    "instruction": "◇ 伝わる指示",
+    "encouragement": "♪ やる気の出る声かけ",
+    "day1": "① 明日から",
+    "month1": "② 1か月",
+    "month3": "③ 3か月",
+    "goal": "◎ 半年後の目標",
+    "illustAlt": "{name}のイラスト",
+    "catch": "◇ {catch}"
+  }
+}

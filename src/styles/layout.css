@@ -1,0 +1,105 @@
+/* 画面の配置。スマホ（〜599px）を基本に、タブレット（600px〜）とパソコン（1000px〜）で広げる */
+.screen { max-width: 40rem; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
+
+/* トップ */
+.notice { background: var(--card); border: 2px solid var(--line); border-radius: var(--radius); padding: 1rem 1.1rem 0.2rem; margin: 1.2rem 0; }
+.top-actions { display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1.5rem; }
+
+/* 質問 */
+.progress { width: 100%; height: 16px; accent-color: var(--head); }
+.progress-text { font-family: var(--font-ui); font-weight: 700; }
+.question-text { font-size: 1.25rem; margin: 1.2rem 0; }
+.answers { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.6rem; }
+.answers button { width: 100%; text-align: left; border-radius: 16px; }
+.quiz-nav { margin-top: 1.5rem; }
+
+/* 結果：入口 */
+.r-hero { background: var(--group-soft, var(--card)); border-radius: var(--radius); padding: 1.2rem 1rem; text-align: center; box-shadow: 0 6px 16px var(--shadow); }
+.r-hero p { text-align: left; margin-left: auto; margin-right: auto; }
+.r-illust {
+  width: 160px; height: 160px; margin: 0 auto 0.6rem;
+  border-radius: 46% 54% 52% 48% / 55% 45% 55% 45%;
+  background: var(--sub); display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.r-illust img { width: 150px; height: 150px; object-fit: contain; }
+.r-group {
+  display: inline-block; font-family: var(--font-ui); font-weight: 700; padding: 0.1em 0.9em; border-radius: 999px;
+  border: 2px solid var(--group-ink, var(--head)); color: var(--group-ink, var(--head)); background: var(--bg);
+}
+.r-name { font-size: 1.5rem; color: var(--group-ink, var(--head)); margin: 0.4rem 0 0.2rem; }
+.r-catch { display: inline-block; background: var(--mark); border-radius: 999px; padding: 0.1em 0.9em; font-family: var(--font-ui); font-weight: 700; margin-bottom: 0.8rem; }
+
+/* 結果：5つのかたむき */
+.axis-row { margin: 0 0 1.3rem; }
+.axis-labels { display: flex; justify-content: space-between; gap: 0.5rem; }
+.axis-bar { position: relative; height: 16px; border-radius: 999px; background: var(--card); border: 2px solid var(--line); margin: 0.3rem 0; }
+.axis-mid { position: absolute; left: 50%; top: -6px; bottom: -6px; border-left: 2px dotted var(--muted); }
+.axis-dot {
+  position: absolute; top: -8px; left: var(--pos, 50%); width: 28px; height: 28px; margin-left: -14px;
+  border-radius: 50%; background: var(--group-strong, var(--head)); border: 3px solid var(--bg);
+}
+.axis-result { font-family: var(--font-ui); font-weight: 700; }
+
+/* 結果：カード */
+.card { background: var(--card); border-left: 6px solid var(--group-strong, var(--accent)); border-radius: 16px; padding: 1rem 1rem 0.2rem; margin: 0 0 1.1rem; }
+.tag { display: inline-block; font-family: var(--font-ui); font-weight: 700; border: 2px solid var(--text); border-radius: 999px; padding: 0 0.7em; margin-bottom: 0.2rem; background: var(--bg); }
+.tag-star { border-color: var(--group-ink, var(--head)); color: var(--group-ink, var(--head)); }
+
+/* 結果：成長ステップ */
+.chips { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 0.6rem 0 1.1rem; }
+.chips button[aria-pressed="true"]::before { content: "✓ "; }
+.steps { list-style: none; padding: 0; margin: 0 0 1rem; }
+.steps li { border-left: 4px solid var(--group-strong, var(--accent)); padding: 0.2rem 0 0.9rem 1rem; }
+.steps .when { display: block; font-family: var(--font-ui); font-weight: 700; color: var(--head); }
+.goal { background: var(--mark); border: 2px solid var(--group-strong, var(--accent)); border-radius: 16px; padding: 0.8rem 1rem; font-family: var(--font-ui); font-weight: 700; }
+
+.r-actions { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 2rem; }
+
+/* あしらい（CSS の背景画像なので読み上げられない。文字に重ねない位置に置く） */
+.screen.top h1::before, .screen.top h1::after, .notice h2::after, .screen.result h2::after,
+.r-hero::before, .r-hero::after, .goal::after {
+  /* background の一括指定は background-image まで消すので使わない */
+  content: ""; background-position: center; background-size: contain; background-repeat: no-repeat;
+}
+.screen.top h1::before, .screen.top h1::after, .notice h2::after, .screen.result h2::after {
+  display: inline-block; width: 1.2em; height: 1.2em; vertical-align: -0.2em;
+}
+.screen.top h1::before { background-image: url("../assets/deco/sparkle.webp"); margin-right: 0.3em; }
+.screen.top h1::after { background-image: url("../assets/deco/heart.webp"); margin-left: 0.3em; }
+.notice h2::after { background-image: url("../assets/deco/clipboard.webp"); margin-left: 0.3em; }
+.screen.result h2::after { margin-left: 0.3em; }
+[data-section="axes"] h2::after { background-image: url("../assets/deco/star.webp"); }
+[data-section="cards"] h2::after { background-image: url("../assets/deco/leaf.webp"); }
+[data-section="leader"] h2::after { background-image: url("../assets/deco/nametag.webp"); }
+[data-section="follower"] h2::after { background-image: url("../assets/deco/hands.webp"); }
+[data-section="growth"] h2::after { background-image: url("../assets/deco/flower.webp"); }
+/* 入口：イラストの左上と右下に置く */
+.r-hero { position: relative; }
+.r-hero::before, .r-hero::after { position: absolute; width: 40px; height: 40px; }
+.r-hero::before { background-image: url("../assets/deco/sparkle.webp"); top: 14px; left: calc(50% - 124px); }
+.r-hero::after { background-image: url("../assets/deco/heart.webp"); top: 128px; left: calc(50% + 82px); }
+.goal { position: relative; padding-right: 3rem; }
+.goal::after { background-image: url("../assets/deco/sparkle.webp"); position: absolute; top: 0.6rem; right: 0.7rem; width: 32px; height: 32px; }
+
+/* タブレット */
+@media (min-width: 600px) {
+  .r-hero::before { top: 8px; left: 8px; }
+  .r-hero::after { top: auto; bottom: 8px; left: 8px; }
+  .screen { padding: 1.75rem 2rem 3.5rem; }
+  .r-hero { display: flex; gap: 1.5rem; align-items: center; text-align: left; padding: 1.5rem; }
+  .r-hero .r-illust { margin: 0; flex: 0 0 180px; width: 180px; height: 180px; }
+  .r-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+  .r-pair .card { margin: 0; height: calc(100% - 1rem); }
+}
+
+/* パソコン */
+@media (min-width: 1000px) {
+  .screen.result { max-width: 74rem; }
+  /* 文字を大きくしても右の列がはみ出さないよう、左の列は全体の 45% までにする */
+  .result-grid { display: grid; grid-template-columns: min(22rem, 45%) minmax(0, 1fr); gap: 2.5rem; align-items: start; }
+  .col-a .r-hero { display: block; text-align: center; }
+  .col-a .r-hero .r-illust { margin: 0 auto 0.6rem; width: 200px; height: 200px; }
+  .col-a .r-hero::before { top: 10px; left: calc(50% - 144px); }
+  .col-a .r-hero::after { bottom: auto; top: 176px; left: calc(50% + 104px); }
+  .col-b > h2:first-child { margin-top: 0; }
+}

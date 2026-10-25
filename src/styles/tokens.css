@@ -1,0 +1,68 @@
+/* 色の土台（案A：コーラル × ミント）とグループの4色。真っ白・真っ黒は使わない */
+:root {
+  --bg: #fdf5ef;
+  --text: #3b2f2c;
+  --muted: #6b5650;
+  --head: #a8402b;
+  --accent: #f08a6c;
+  --card: #fde8df;
+  --sub: #cdeee0;
+  --mark: #ffe0d3;
+  --line: #f0cbbd;
+  --shadow: rgba(150, 80, 60, 0.14);
+
+  /* けん引：コーラル */
+  --g-drive-soft: #fde3d8;
+  --g-drive-strong: #e8735a;
+  --g-drive-ink: #9a3a26;
+  /* まとめ役：ひまわりイエロー */
+  --g-unite-soft: #fdf0c4;
+  --g-unite-strong: #e0a820;
+  --g-unite-ink: #7a5200;
+  /* 職人：ミント */
+  --g-craft-soft: #d8f1e6;
+  --g-craft-strong: #4fb08a;
+  --g-craft-ink: #1f6b4f;
+  /* 寄りそい：ラベンダー */
+  --g-care-soft: #ebe1f7;
+  --g-care-strong: #9a74c4;
+  --g-care-ink: #5e3f8a;
+
+  --font-body: "UD デジタル 教科書体 N-R", "UD Digi Kyokasho N-R", "Klee One", "BIZ UDPGothic", sans-serif;
+  --font-ui: "BIZ UDPGothic", "UD デジタル 教科書体 N-B", "UD Digi Kyokasho N-B", sans-serif;
+  --radius: 20px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #2b2321;
+    --text: #f3e6df;
+    --muted: #cdbab2;
+    --head: #ffab92;
+    --accent: #f08a6c;
+    --card: #3a2e2a;
+    --sub: #2f4a40;
+    --mark: #5a3a30;
+    --line: #5a463e;
+    --shadow: rgba(0, 0, 0, 0);
+
+    --g-drive-soft: #3d2a24;
+    --g-drive-strong: #f08a6c;
+    --g-drive-ink: #ffc2ad;
+    --g-unite-soft: #3b3220;
+    --g-unite-strong: #f5c84c;
+    --g-unite-ink: #f8dc8c;
+    --g-craft-soft: #20382f;
+    --g-craft-strong: #6cc9a3;
+    --g-craft-ink: #a8e6cc;
+    --g-care-soft: #322a40;
+    --g-care-strong: #b597dd;
+    --g-care-ink: #d9c6f2;
+  }
+}
+
+/* 結果画面のグループ色 */
+[data-group="drive"] { --group-soft: var(--g-drive-soft); --group-strong: var(--g-drive-strong); --group-ink: var(--g-drive-ink); }
+[data-group="unite"] { --group-soft: var(--g-unite-soft); --group-strong: var(--g-unite-strong); --group-ink: var(--g-unite-ink); }
+[data-group="craft"] { --group-soft: var(--g-craft-soft); --group-strong: var(--g-craft-strong); --group-ink: var(--g-craft-ink); }
+[data-group="care"] { --group-soft: var(--g-care-soft); --group-strong: var(--g-care-strong); --group-ink: var(--g-care-ink); }

@@ -19,3 +19,9 @@ credentials.csv
 # OS
 .DS_Store
 Thumbs.db
+
+# 生成物（書体のサブセット）
+src/assets/fonts/
+
+# Python のキャッシュ
+__pycache__/
