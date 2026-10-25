@@ -21,6 +21,12 @@ function click(root: ParentNode, label: string) {
 }
 
 const AGREE = scaleLabels[4]!; // そう思う
+
+/** 「はじめる」を押し、画面が切りかわってからの連続タップ対策の時間を待つ */
+function start(root: HTMLElement, clock: ReturnType<typeof fakeClock>) {
+  click(root, 'はじめる');
+  clock.advance(300);
+}
 const progressText = (root: HTMLElement) => root.querySelector('.progress-text')?.textContent;
 
 describe('トップ', () => {
@@ -59,8 +65,8 @@ describe('質問', () => {
   });
 
   test('「そう思う」で次へ進み、答えが 5 で保存される', () => {
-    const { root, store } = setup();
-    click(root, 'はじめる');
+    const { root, store, clock } = setup();
+    start(root, clock);
     click(root, AGREE);
     expect(progressText(root)).toBe('2／40');
     expect(store.get().answers[questions[0]!.id]).toBe(5);
@@ -68,7 +74,7 @@ describe('質問', () => {
 
   test('「戻る」で前の問題に戻り、押した答えが選ばれた状態になる', () => {
     const { root, clock } = setup();
-    click(root, 'はじめる');
+    start(root, clock);
     click(root, AGREE);
     clock.advance(500);
     click(root, '◀ 戻る');
@@ -78,7 +84,7 @@ describe('質問', () => {
 
   test('300ms 未満の連続タップは、次の問題に答えを入れない', () => {
     const { root, store, clock } = setup();
-    click(root, 'はじめる');
+    start(root, clock);
     click(root, AGREE);
     clock.advance(299);
     click(root, AGREE);
@@ -86,6 +92,31 @@ describe('質問', () => {
     expect(progressText(root)).toBe('2／40');
     clock.advance(1);
     click(root, AGREE);
+    expect(store.get().answers[questions[1]!.id]).toBe(5);
+  });
+
+  test('「はじめる」から 300ms 未満の答えは入らない（ダブルタップ）', () => {
+    const { root, store, clock } = setup();
+    click(root, 'はじめる');
+    clock.advance(299);
+    click(root, AGREE);
+    expect(store.get().answers[questions[0]!.id]).toBeUndefined();
+    expect(progressText(root)).toBe('1／40');
+  });
+
+  test('「戻る」から 300ms 未満の「戻る」や答えは無視する（ダブルタップ）', () => {
+    const { root, store, clock } = setup();
+    start(root, clock);
+    click(root, AGREE);
+    clock.advance(300);
+    click(root, AGREE);
+    clock.advance(300);
+    click(root, '◀ 戻る');
+    expect(progressText(root)).toBe('2／40');
+    clock.advance(100);
+    click(root, '◀ 戻る');
+    expect(progressText(root)).toBe('2／40');
+    click(root, scaleLabels[0]!);
     expect(store.get().answers[questions[1]!.id]).toBe(5);
   });
 
@@ -100,7 +131,7 @@ describe('質問', () => {
 
   test('保存できない端末でも、40問答えると結果画面になり、終わった時刻が入る', () => {
     const { root, store, clock } = setup({ storage: null });
-    click(root, 'はじめる');
+    start(root, clock);
     for (let i = 0; i < 40; i++) {
       click(root, AGREE);
       clock.advance(300);

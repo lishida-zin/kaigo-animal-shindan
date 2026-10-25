@@ -15,14 +15,16 @@ export type AppDeps = {
   confirm: (message: string) => boolean;
 };
 
-/** 連続タップを無視する時間（ミリ秒） */
+/** 画面が切りかわってから、タップを無視する時間（ミリ秒）。ダブルタップの2回目が次の画面に当たるのを防ぐ */
 const TAP_GUARD_MS = 300;
 
 export function createApp(root: HTMLElement, deps: AppDeps): { show(screen: Screen): void } {
   const { store, now } = deps;
-  let lastAnswerAt = Number.NEGATIVE_INFINITY;
+  let mountedAt = Number.NEGATIVE_INFINITY;
+  const tooSoon = () => now() - mountedAt < TAP_GUARD_MS;
 
   function mount(el: HTMLElement, focus?: HTMLElement | null): void {
+    mountedAt = now();
     root.replaceChildren(el);
     document.documentElement.scrollTop = 0;
     focus?.focus();
@@ -43,9 +45,8 @@ export function createApp(root: HTMLElement, deps: AppDeps): { show(screen: Scre
       { question, index, total: questions.length, selected: state.answers[question.id] },
       {
         onAnswer(value: Answer) {
+          if (tooSoon()) return;
           const t = now();
-          if (t - lastAnswerAt < TAP_GUARD_MS) return;
-          lastAnswerAt = t;
           const answers = { ...store.get().answers, [question.id]: value };
           if (index + 1 < questions.length) {
             store.update({ answers, currentIndex: index + 1 });
@@ -56,6 +57,7 @@ export function createApp(root: HTMLElement, deps: AppDeps): { show(screen: Scre
           }
         },
         onBack() {
+          if (tooSoon()) return;
           if (index === 0) return show('top');
           store.update({ currentIndex: index - 1 });
           show('quiz');
