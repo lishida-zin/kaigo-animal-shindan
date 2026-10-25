@@ -28,6 +28,7 @@ function start(root: HTMLElement, clock: ReturnType<typeof fakeClock>) {
   clock.advance(300);
 }
 const progressText = (root: HTMLElement) => root.querySelector('.progress-text')?.textContent;
+const allAnswers = (v: 1 | 2 | 3 | 4 | 5) => Object.fromEntries(questions.map((q) => [q.id, v]));
 
 describe('トップ', () => {
   test('注意書きが出る', () => {
@@ -49,7 +50,7 @@ describe('トップ', () => {
   });
 
   test('結果があれば「前回の結果を見る」', () => {
-    const { root } = setup({ state: { completedAt: '2026-10-23T00:00:00.000Z' } });
+    const { root } = setup({ state: { result: { answers: allAnswers(3), completedAt: '2026-10-23T00:00:00.000Z' } } });
     expect(findButton(root, '前回の結果を見る')).toBeDefined();
   });
 });
@@ -137,6 +138,40 @@ describe('質問', () => {
       clock.advance(300);
     }
     expect(root.querySelector('[data-screen="result"]')).not.toBeNull();
-    expect(store.get().completedAt).toBe(new Date(clock.now() - 300).toISOString());
+    expect(store.get().result?.completedAt).toBe(new Date(clock.now() - 300).toISOString());
+  });
+});
+
+describe('前回の結果を残す', () => {
+  const saved = () => ({ result: { answers: allAnswers(3), completedAt: '2026-10-23T00:00:00.000Z' } });
+
+  test('「もう一度やる」→ 1問目で「戻る」でも、前回の結果はトップから見られる', () => {
+    const { root, store, clock } = setup({ state: saved() });
+    click(root, 'もう一度やる');
+    clock.advance(300);
+    click(root, '◀ 戻る');
+    expect(store.get().result).not.toBeNull();
+    expect(findButton(root, '前回の結果を見る')).toBeDefined();
+  });
+
+  test('やり直しの途中でやめると、「つづきから」と「前回の結果を見る」の両方が出る', () => {
+    const { root, clock } = setup({ state: saved() });
+    click(root, 'もう一度やる');
+    clock.advance(300);
+    click(root, AGREE);
+    clock.advance(300);
+    for (let i = 0; i < 2; i++) { click(root, '◀ 戻る'); clock.advance(300); }
+    expect(findButton(root, 'つづきから')).toBeDefined();
+    expect(findButton(root, '前回の結果を見る')).toBeDefined();
+  });
+
+  test('40問を答え終えたときに結果が置きかわり、途中の答えは空になる', () => {
+    const { root, store, clock } = setup({ state: saved() });
+    click(root, 'もう一度やる');
+    clock.advance(300);
+    for (let i = 0; i < 40; i++) { click(root, AGREE); clock.advance(300); }
+    expect(store.get().result?.answers).toEqual(allAnswers(5));
+    expect(store.get().answers).toEqual({});
+    expect(root.querySelector('[data-screen="result"]')).not.toBeNull();
   });
 });

@@ -22,7 +22,7 @@ test('保存値が壊れた JSON なら初期状態', () => {
   const state = createStore({ questionSetVersion: '1.0', storage }).get();
   expect(state.answers).toEqual({});
   expect(state.currentIndex).toBe(0);
-  expect(state.completedAt).toBeNull();
+  expect(state.result).toBeNull();
 });
 
 test('質問の版が違えば初期状態に戻り、古い答えは残らない', () => {
@@ -37,7 +37,7 @@ test('質問の版が違えば初期状態に戻り、古い答えは残らな�
 test('答えに 1〜5 以外の値が入っていれば初期状態', () => {
   const storage = new FakeStorage();
   storage.setItem(KEY, JSON.stringify({
-    schemaVersion: 1, questionSetVersion: '1.0', answers: { A01: 7 }, currentIndex: 1, completedAt: null, growthAxis: null,
+    schemaVersion: 2, questionSetVersion: '1.0', answers: { A01: 7 }, currentIndex: 1, result: null, growthAxis: null,
   }));
   expect(createStore({ questionSetVersion: '1.0', storage }).get().answers).toEqual({});
 });
@@ -61,4 +61,28 @@ test('reset で key が Storage から消える', () => {
   store.update({ answers: { A01: 3 } });
   store.reset();
   expect(storage.getItem(KEY)).toBeNull();
+});
+
+test('前回の結果（答えと終わった時刻）を保存して読み戻せる', () => {
+  const storage = new FakeStorage();
+  const result = { answers: { A01: 4 as const }, completedAt: '2026-10-25T00:00:00.000Z' };
+  createStore({ questionSetVersion: '1.0', storage }).update({ result });
+  expect(createStore({ questionSetVersion: '1.0', storage }).get().result).toEqual(result);
+});
+
+test('前回の結果の答えに 1〜5 以外の値があれば初期状態', () => {
+  const storage = new FakeStorage();
+  storage.setItem(KEY, JSON.stringify({
+    schemaVersion: 2, questionSetVersion: '1.0', answers: {}, currentIndex: 0,
+    result: { answers: { A01: 0 }, completedAt: '2026-10-25T00:00:00.000Z' }, growthAxis: null,
+  }));
+  expect(createStore({ questionSetVersion: '1.0', storage }).get().result).toBeNull();
+});
+
+test('古い形（schemaVersion 1）の保存データは捨てる', () => {
+  const storage = new FakeStorage();
+  storage.setItem(KEY, JSON.stringify({
+    schemaVersion: 1, questionSetVersion: '1.0', answers: { A01: 3 }, currentIndex: 1, completedAt: null, growthAxis: null,
+  }));
+  expect(createStore({ questionSetVersion: '1.0', storage }).get().answers).toEqual({});
 });

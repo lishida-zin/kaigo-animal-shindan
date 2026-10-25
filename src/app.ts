@@ -31,7 +31,8 @@ export function createApp(root: HTMLElement, deps: AppDeps): { show(screen: Scre
   }
 
   function startFresh(): void {
-    store.update({ answers: {}, currentIndex: 0, completedAt: null, growthAxis: null });
+    // 前回の結果と選んだ軸は、新しい結果が出るまで残す
+    store.update({ answers: {}, currentIndex: 0 });
     show('quiz');
   }
 
@@ -52,7 +53,7 @@ export function createApp(root: HTMLElement, deps: AppDeps): { show(screen: Scre
             store.update({ answers, currentIndex: index + 1 });
             show('quiz');
           } else {
-            store.update({ answers, currentIndex: index, completedAt: new Date(t).toISOString() });
+            store.update({ result: { answers, completedAt: new Date(t).toISOString() }, answers: {}, currentIndex: 0 });
             show('result');
           }
         },
@@ -68,8 +69,8 @@ export function createApp(root: HTMLElement, deps: AppDeps): { show(screen: Scre
   }
 
   function showResult(): void {
-    const { answers } = store.get();
-    if (!isComplete(questions, answers)) return show('top');
+    const answers = store.get().result?.answers;
+    if (!answers || !isComplete(questions, answers)) return show('top');
     const el = renderResult({
       diagnosis: diagnose(questions, answers, axes, groups, balanceRange),
       store,

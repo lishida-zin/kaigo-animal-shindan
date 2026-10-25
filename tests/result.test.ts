@@ -116,7 +116,7 @@ describe('結果画面のボタン（アプリ全体で確認）', () => {
     document.body.replaceChildren(root);
     const store = createStore({ questionSetVersion, storage: null });
     const answers = Object.fromEntries(questions.map((q) => [q.id, 3 as const]));
-    store.update({ answers, currentIndex: 39, completedAt: '2026-10-23T00:00:00.000Z' });
+    store.update({ result: { answers, completedAt: '2026-10-23T00:00:00.000Z' } });
     const app = createApp(root, { store, now: fakeClock().now, confirm: () => confirmAnswer });
     app.show('result');
     return { root, store };
@@ -125,7 +125,7 @@ describe('結果画面のボタン（アプリ全体で確認）', () => {
   test('「結果を消す」で確認に「はい」なら、初期状態に戻ってトップへ', () => {
     const { root, store } = completedApp(true);
     findButton(root, '結果を消す')!.click();
-    expect(store.get().completedAt).toBeNull();
+    expect(store.get().result).toBeNull();
     expect(store.get().answers).toEqual({});
     expect(root.querySelector('[data-screen="top"]')).not.toBeNull();
   });
@@ -133,14 +133,15 @@ describe('結果画面のボタン（アプリ全体で確認）', () => {
   test('「結果を消す」で確認に「いいえ」なら何もしない', () => {
     const { root, store } = completedApp(false);
     findButton(root, '結果を消す')!.click();
-    expect(store.get().completedAt).not.toBeNull();
+    expect(store.get().result).not.toBeNull();
     expect(root.querySelector('[data-screen="result"]')).not.toBeNull();
   });
 
-  test('「もう一度やる」で答えを消して1問目へ', () => {
+  test('「もう一度やる」で1問目へ。前回の結果は新しい結果が出るまで残る', () => {
     const { root, store } = completedApp(true);
     findButton(root, 'もう一度やる')!.click();
     expect(store.get().answers).toEqual({});
+    expect(store.get().result).not.toBeNull();
     expect(root.querySelector('.progress-text')?.textContent).toBe('1／40');
   });
 });

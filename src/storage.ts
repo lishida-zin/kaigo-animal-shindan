@@ -1,12 +1,19 @@
 import type { Answer, AxisId } from './types';
 
+/** 前回の結果。新しく40問を答え終えたときにだけ置きかえる */
+export type SavedResult = {
+  answers: Record<string, Answer>;
+  /** ISO 文字列 */
+  completedAt: string;
+}
+
 export type SavedState = {
-  schemaVersion: 1;
+  schemaVersion: 2;
   questionSetVersion: string;
+  /** いま答えている途中の答え */
   answers: Record<string, Answer>;
   currentIndex: number;
-  /** ISO 文字列 */
-  completedAt: string | null;
+  result: SavedResult | null;
   growthAxis: AxisId | null;
 }
 
@@ -19,18 +26,27 @@ export type Store = {
 const AXIS_IDS: readonly string[] = ['A', 'B', 'C', 'D', 'E'];
 
 function initialState(questionSetVersion: string): SavedState {
-  return { schemaVersion: 1, questionSetVersion, answers: {}, currentIndex: 0, completedAt: null, growthAxis: null };
+  return { schemaVersion: 2, questionSetVersion, answers: {}, currentIndex: 0, result: null, growthAxis: null };
+}
+
+function isAnswers(value: unknown): value is Record<string, Answer> {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;
+  return Object.values(value).every((a) => Number.isInteger(a) && (a as number) >= 1 && (a as number) <= 5);
+}
+
+function isResult(value: unknown): value is SavedResult {
+  if (typeof value !== 'object' || value === null) return false;
+  const r = value as Record<string, unknown>;
+  return isAnswers(r.answers) && typeof r.completedAt === 'string';
 }
 
 function isValid(value: unknown, questionSetVersion: string): value is SavedState {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
-  if (v.schemaVersion !== 1 || v.questionSetVersion !== questionSetVersion) return false;
-  if (typeof v.answers !== 'object' || v.answers === null || Array.isArray(v.answers)) return false;
-  const answersOk = Object.values(v.answers).every((a) => Number.isInteger(a) && (a as number) >= 1 && (a as number) <= 5);
-  if (!answersOk) return false;
+  if (v.schemaVersion !== 2 || v.questionSetVersion !== questionSetVersion) return false;
+  if (!isAnswers(v.answers)) return false;
   if (!Number.isInteger(v.currentIndex) || (v.currentIndex as number) < 0) return false;
-  if (v.completedAt !== null && typeof v.completedAt !== 'string') return false;
+  if (v.result !== null && !isResult(v.result)) return false;
   if (v.growthAxis !== null && !AXIS_IDS.includes(v.growthAxis as string)) return false;
   return true;
 }
